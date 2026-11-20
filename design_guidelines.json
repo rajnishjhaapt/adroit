@@ -1,0 +1,209 @@
+{
+  "brand_identity": {
+    "name": "Adroit Management and Tax Consultants",
+    "location": "Noida, India",
+    "tagline": "Your Trusted Partner in Audit, Taxation & Business Advisory",
+    "experience": "18+ Years of Experience",
+    "aesthetic": "Established Chartered Accountancy and elite corporate financial consultancy. Refined, authoritative, and structured with Swiss precision and bespoke Indian corporate elegance. Navy Blue deep authority, brushed bullion gold luxury accents, and crisp architectural negative space."
+  },
+  "typography": {
+    "font_families": {
+      "heading": "Cormorant Garamond, 'Playfair Display', Georgia, serif",
+      "body": "Outfit, 'Plus Jakarta Sans', -apple-system, sans-serif",
+      "mono_numerical": "'JetBrains Mono', 'Fira Code', monospace"
+    },
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-[#10243A] leading-[1.12]",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-serif font-semibold tracking-tight text-[#10243A]",
+      "h3": "text-xl sm:text-2xl font-serif font-medium text-[#10243A]",
+      "h4": "text-lg sm:text-xl font-sans font-semibold text-[#10243A]",
+      "body": "text-base font-sans text-[#243447] leading-relaxed",
+      "small_label": "text-xs font-sans uppercase tracking-[0.2em] font-semibold text-[#C6A15B]"
+    }
+  },
+  "colors": {
+    "palette": {
+      "navy_primary": "#10243A",
+      "navy_dark": "#0B1828",
+      "navy_light": "#1A3654",
+      "gold_accent": "#C6A15B",
+      "gold_hover": "#B38F48",
+      "gold_subtle": "#F7F2E7",
+      "gold_border": "#E5D4B2",
+      "white": "#FFFFFF",
+      "light_grey_bg": "#F3F6F9",
+      "card_border": "#E2E8F0",
+      "dark_text": "#243447",
+      "muted_text": "#5A6E85",
+      "success": "#1E7E34",
+      "whatsapp_green": "#25D366"
+    },
+    "rules": {
+      "gradient_overload_ban": "No generic rainbow or loud tech gradients. Pure solid deep navy (#10243A), subtle tinted slate grey backgrounds (#F3F6F9), and crisp 1px gold borders (#C6A15B).",
+      "transparent_header_ban": "Never allow transparent headers over content. Use glassmorphic solid backdrop 'backdrop-blur-xl bg-[#10243A]/95 text-white border-b border-[#C6A15B]/20' or 'bg-white/95 backdrop-blur-md text-[#10243A] border-b border-slate-200'.",
+      "buttons": "Primary CTA uses Gold #C6A15B background with dark Navy #10243A or white text, with hover darkening to #B38F48. Secondary CTA uses Navy border or outline with subtle gold icon."
+    }
+  },
+  "image_urls": {
+    "hero_consulting_meeting": "https://images.unsplash.com/photo-1551135049-8a33b5883817?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "financial_analysis_desk": "https://images.pexels.com/photos/5816300/pexels-photo-5816300.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "corporate_tower_noida": "https://images.unsplash.com/photo-1574848296471-28f79a036f79?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "tax_audit_calculating": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "modern_business_team": "https://images.unsplash.com/photo-1758518731706-be5d5230e5a5?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "layout_and_navigation": {
+    "header": {
+      "style": "sticky top-0 z-50 bg-[#10243A] text-white border-b border-[#C6A15B]/30 shadow-md",
+      "top_bar": "Deep Navy top strip with Noida contact number, email 'info@adroitconsultants.in', WhatsApp quick link, and Client Portal/Admin access button.",
+      "main_nav": "Adroit Emblem with Gold crest, 'Adroit Management & Tax Consultants' wordmark, links: Home, About Us, Our Services (with mega dropdown/category shortcuts), Our Team, Contact Us, and Gold pill button 'Schedule Consultation' [data-testid='header-schedule-btn']."
+    },
+    "footer": {
+      "style": "bg-[#0B1828] text-white pt-20 pb-12 border-t-2 border-[#C6A15B]",
+      "columns": [
+        "Company intro, Noida Head Office address, ICAI ethical standards compliance badge",
+        "Quick Links to 10 Key Service Areas with deep links",
+        "Direct Advisory Lines: WhatsApp Desk, Consultation Booking, Corporate Enquiries",
+        "Legal: Privacy Policy, Terms & Disclaimer, Client Confidentiality Guarantee"
+      ],
+      "bottom_bar": "Copyright © 2026 Adroit Management and Tax Consultants. All Rights Reserved. Designed for Professional Excellence."
+    }
+  },
+  "key_features_and_pages": {
+    "home_page": {
+      "hero_section": "Asymmetric split layout. Left: Eyebrow badge 'ESTABLISHED PRACTICE IN NOIDA', Cormorant Garamond H1 'Your Trusted Partner in Audit, Taxation & Business Advisory', value premise, two CTAs: 'Schedule a Consultation' (Gold solid) + 'Explore Our Services' (Outline with gold hover). Right: Floating prestige metrics card (18+ Years Experience, 2500+ Audits & Tax Filings, 99.4% Regulatory Compliance, 4 Associated CA Practices).",
+      "experience_badge_section": "18+ Years of Advisory Mastery banner with subtle textured geometric lattice and trust stamps.",
+      "services_grid_10": "Tetris/Bento style 10 service cards grid with custom Lucide icon, Gold accent line, service code, brief description, and 'Explore Details' button.",
+      "why_choose_us": "4 pillars: High-Touch Partner Involvement, Comprehensive Statutory Rigor, Proactive Tax Strategy, Cross-Firm Multi-Disciplinary Consortium.",
+      "consultation_cta_strip": "Navy background container with gold border: 'Let's Discuss Your Business Requirements' + instant booking button.",
+      "quick_contact_section": "Direct contact details, office timings in Sector 62 / Noida central commercial hub, emergency tax notice helpline."
+    },
+    "services_page_and_accordion": {
+      "multi_select_accordion": "Interactive accordion of 10 service categories with sub-services. Each category and sub-service has a high-contrast checkbox [data-testid='service-checkbox-*'].",
+      "sticky_enquiry_bar": "Floats cleanly at bottom or side when 1+ services are checked. Shows: 'X Services Selected', 'Enquire on WhatsApp' (pre-populates WhatsApp text with selected services list) [data-testid='whatsapp-enquiry-btn'], and 'Clear Selection' [data-testid='clear-selection-btn'].",
+      "ten_categories": [
+        {"id": "direct-tax", "name": "Direct Taxation & Advisory", "subs": ["Corporate Income Tax Returns", "High Net-Worth Individual Tax Planning", "TDS/TCS Compliance & Filing", "Tax Assessments, Appeals & Scrutiny (CIT/ITAT)", "International Taxation & Double Taxation Avoidance (DTAA)"]},
+        {"id": "indirect-tax", "name": "Goods & Services Tax (GST)", "subs": ["GST Registration & Amendments", "Monthly/Quarterly Return Filing (GSTR-1, 3B, 9, 9C)", "GST Health Check & Input Tax Credit (ITC) Reconciliation", "GST Department Audits & Show Cause Notice Representation", "E-Invoicing & E-Way Bill Advisory"]},
+        {"id": "statutory-audit", "name": "Statutory & Internal Audit", "subs": ["Companies Act Statutory Audits", "Internal Control Systems & Risk Assessments", "Tax Audit under Section 44AB", "Management Audit & Standard Operating Procedures (SOPs)", "Stock & Asset Verification Audits"]},
+        {"id": "corporate-law", "name": "Corporate Law & MCA Compliance", "subs": ["Private Limited & LLP Incorporation", "ROC Annual Filings & Statutory Registers", "Director KYC & Din Compliances", "Share Transfers, Buybacks & Capital Restructuring", "Winding Up, Strike Off & Dormant Status"]},
+        {"id": "business-advisory", "name": "Business Advisory & CFO Services", "subs": ["Virtual CFO Services for SMEs & Startups", "Financial Modeling & Cash Flow Projections", "MIS Reporting & Budgetary Controls", "Mergers, Acquisitions & Due Diligence", "Business Valuation & Capital Structuring"]},
+        {"id": "bookkeeping-payroll", "name": "Accounting, Bookkeeping & Payroll", "subs": ["End-to-End Cloud Accounting (Tally, Zoho, QuickBooks)", "Financial Statements Preparation (AS / Ind AS)", "Payroll Processing, Salary Structures & Payslips", "PF, ESI, Gratuity & Labor Law Compliances", "Accounts Payable & Receivable Management"]},
+        {"id": "startup-advisory", "name": "Startup Advisory & Fund Raising", "subs": ["DPIIT Startup India Recognition & Tax Exemptions (80IAC)", "Investor Pitch Deck Financial Preparation", "Term Sheet Review & Cap Table Modeling", "Angel Tax Compliance & Valuations (Rule 11UA)", "ESOP Scheme Structuring & Implementation"]},
+        {"id": "transfer-pricing", "name": "Transfer Pricing & Cross-Border Advisory", "subs": ["Transfer Pricing Documentation & Study (Form 3CEB)", "Benchmarking Analysis & Arm's Length Pricing", "Master File & Country-by-Country (CbCR) Reporting", "Representation in TP Audits & Dispute Resolution", "Advance Pricing Agreements (APA) Advisory"]},
+        {"id": "rera-regulatory", "name": "RERA & Real Estate Regulatory Services", "subs": ["RERA Project Registration & Quarterly Updates", "RERA Financial Certifications (Form 3 & Form 5)", "Escrow Account Withdrawals Compliance", "Promoter-Allottee Dispute Financial Consulting", "Builder Annual Audit & Compliance Filings"]},
+        {"id": "nri-taxation", "name": "NRI Taxation & FEMA Advisory", "subs": ["FEMA & RBI Approvals for Inward/Outward Remittance", "Form 15CA & 15CB Certifications", "Repatriation of Funds from NRO to NRE Account", "Capital Gains Tax Advisory on Indian Property Sales", "Lower Deduction Certificate (Nil/Lower TDS under Sec 197)"]}
+      ]
+    },
+    "service_detail_pages": {
+      "route_format": "/services/:serviceId",
+      "structure": [
+        "Hero banner with Service Code, Category Name, and 'Consult Our Partner' badge",
+        "Introduction & Strategic Context",
+        "What This Service Covers (Structured grid with checkmarks)",
+        "Who Needs This Service (Industry types, entity scale, trigger scenarios)",
+        "Our Step-by-Step Engagement Process (Numbered timeline 1 to 5)",
+        "Frequently Asked Questions (Interactive Accordion)",
+        "Service-Specific Quick Enquiry Form + Direct WhatsApp Consultation button"
+      ]
+    },
+    "our_team_page": {
+      "design_constraint": "No photos! Professional monogram/initials badge placeholder inside elegant gold-rimmed navy circle (e.g. 'CA RK', 'CA AS', 'CA SG').",
+      "partners": [
+        {"name": "CA Rajesh K. Sharma, FCA, DISA", "role": "Senior Managing Partner", "specialization": "Direct Taxation, Corporate Restructuring & Appellate Proceedings", "experience": "22+ Years", "initials": "RS"},
+        {"name": "CA Amitav S. Verma, FCA", "role": "Partner - Audit & Assurance", "specialization": "Statutory Audits, Ind AS Advisory & Forensic Accounting", "experience": "18+ Years", "initials": "AV"},
+        {"name": "CA Neha Agarwal, ACA, CS", "role": "Partner - Corporate Tax & GST", "specialization": "GST Advisory, Department Representations & Startup Ecosystems", "experience": "14+ Years", "initials": "NA"}
+      ],
+      "associated_firms": [
+        {
+          "firm_name": "AMKN & Associates (Chartered Accountants)",
+          "members": [
+            {"name": "CA Mukund N. Joshi, FCA", "role": "Senior Partner", "area": "Internal Audit & Risk Management", "initials": "MJ"},
+            {"name": "CA Priyanka Singhal, ACA", "role": "Partner", "area": "International Tax & Transfer Pricing", "initials": "PS"}
+          ]
+        },
+        {
+          "firm_name": "DMD & Associates (Chartered Accountants)",
+          "members": [
+            {"name": "CA Deepak Malhotra, FCA", "role": "Managing Partner", "area": "Bank Audits & Project Financing", "initials": "DM"},
+            {"name": "CA Rohit Dave, ACA", "role": "Partner", "area": "ROC, Insolvency & Company Law", "initials": "RD"}
+          ]
+        },
+        {
+          "firm_name": "Swati Gupta & Company (Chartered Accountants)",
+          "members": [
+            {"name": "CA Swati Gupta, FCA, B.Com (Hons)", "role": "Founder & Principal Partner", "area": "RERA Compliance & NRI Financial Services", "initials": "SG"}
+          ]
+        }
+      ]
+    },
+    "contact_and_booking_pages": {
+      "contact_us": {
+        "rule": "Strictly NO MAP. Use crisp office address cards, sector coordinates, metro landmark hints (Sector 62 Noida Hub), email, direct phone lines, and action buttons: Call Now, WhatsApp Now, Schedule Consultation.",
+        "form": "Fields: Full Name, Entity/Company Name, Email, Phone Number, Service of Interest (Dropdown), Subject, Detailed Requirement message, Submit button."
+      },
+      "schedule_consultation": {
+        "features": "Dedicated booking engine with interactive Date Picker, Time Slot selector (Morning 10-12, Afternoon 2-5, Evening 5-7), Consultation Mode (In-Person at Noida Office vs. Virtual Video Conference), Business Category, and Instant Confirmation summary."
+      }
+    },
+    "admin_dashboard": {
+      "route": "/admin/login and /admin/dashboard",
+      "access": "Secure authentication state (mocked with initial pin/credentials: admin@adroit.in / adroit2026), logout button, role badge.",
+      "modules": [
+        {
+          "tab": "Overview Stats",
+          "metrics": ["Total Client Enquiries", "Pending Review", "Scheduled Consultations", "Assigned Cases", "Exportable CSVs"]
+        },
+        {
+          "tab": "Enquiries & Bookings",
+          "features": "Search by client name/phone/service, filter by Status (New, In Review, Contacted, Converted, Closed), assigned partner dropdown, internal notes modal/drawer, audit history timeline, and 'Export to CSV' button [data-testid='export-csv-btn']."
+        },
+        {
+          "tab": "Service Management",
+          "features": "CRUD controls for all 10 service categories and sub-services: toggle visibility (Active/Hidden), reorder items, edit fee guidelines/descriptions, and add custom sub-services."
+        },
+        {
+          "tab": "Content & Office Hours",
+          "features": "Update office alert banners, emergency tax compliance notifications, hotline numbers, and firm notice board."
+        },
+        {
+          "tab": "Staff & Firm Access",
+          "features": "List of staff consultants with access permissions, role assignment (Admin, Partner, Associate), and activity logs."
+        }
+      ]
+    }
+  },
+  "interactive_components_and_testids": {
+    "data_testids": [
+      "header-schedule-btn",
+      "hero-schedule-consultation-btn",
+      "hero-explore-services-btn",
+      "service-card-*",
+      "service-checkbox-*",
+      "whatsapp-enquiry-btn",
+      "clear-selection-btn",
+      "service-detail-enquire-btn",
+      "contact-form-submit-btn",
+      "booking-date-picker",
+      "booking-time-slot-*",
+      "booking-submit-btn",
+      "admin-login-email",
+      "admin-login-password",
+      "admin-login-submit-btn",
+      "admin-enquiry-search-input",
+      "admin-status-filter-select",
+      "admin-service-toggle-*",
+      "export-csv-btn"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow user choice palette: Navy Blue #10243A, Gold #C6A15B, White #FFFFFF, Light Grey #F3F6F9, Dark Text #243447.",
+    "Implement clean, high-prestige typography: Cormorant Garamond for Headings and Outfit for clean legibility.",
+    "Never display missing photos or broken image icons for team members. Use stylish circular monograms with CA titles and firm affiliations as requested.",
+    "Do not include any Google Map embed on Contact Us page. Deliver a structured, high-polish office coordinate layout instead.",
+    "Ensure the Service Accordion has multi-select checkboxes for categories and sub-services with sticky bottom bar for WhatsApp and Clear Selection.",
+    "Provide dedicated detail pages for all 10 service categories with rich financial content (What it covers, Who needs it, 5-step process, FAQs, enquiry form).",
+    "Admin dashboard must be functional with login, stats overview, interactive enquiry table (search, filter, status change, notes, CSV export), and service management toggle.",
+    "Store enquiries and bookings in React state and localStorage so newly submitted forms appear immediately inside the Admin Enquiries table.",
+    "Add 'data-testid' attributes to all interactive and key informational elements."
+  ]
+}
