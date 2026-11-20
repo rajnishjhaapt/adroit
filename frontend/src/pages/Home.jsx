@@ -22,7 +22,7 @@ const Hero = ({ c }) => (
       </div>
       <div className="relative lg:col-span-5">
         <div className="relative border border-gold/40 p-3">
-          <img src="/images/hero.jpg" alt="Business consultants in a professional meeting" className="aspect-[4/5] w-full object-cover" width="700" height="875" fetchpriority="high" />
+          <img src="/images/hero.jpg" alt="Business consultants in a professional meeting" className="aspect-[4/5] w-full object-cover" width="700" height="875" fetchPriority="high" />
         </div>
         <div className="absolute -bottom-8 -left-4 border border-gold/50 bg-white px-7 py-5 text-navy shadow-2xl sm:-left-10" data-testid="hero-experience-card">
           <p className="font-serif text-5xl font-semibold text-gold-hover">{c.experience}</p>

@@ -37,17 +37,17 @@ const CategoryItem = ({ s, i, sel, toggle }) => {
   const picked = s.sub_services.filter((_, j) => sel[`s:${s.slug}:${j}`]).length;
   return (
     <AccordionItem value={s.slug} className="border border-slate-200 bg-white data-[state=open]:border-gold/60" data-testid={`service-accordion-${s.slug}`}>
-      <div className="flex items-center gap-4 px-5 md:px-7">
+      <div className="flex items-center gap-4 px-5 md:px-7 [&>h3]:flex-1">
         <Checkbox checked={!!sel[catKey]} onCheckedChange={() => toggle(catKey)} className={cbCls} aria-label={`Select ${s.name}`} data-testid={`service-checkbox-${s.slug}`} />
-        <AccordionTrigger className="flex-1 gap-4 py-6 text-left hover:no-underline" data-testid={`service-accordion-trigger-${s.slug}`}>
-          <span className="flex items-center gap-4">
+        <AccordionTrigger className="flex-1 justify-between gap-4 py-6 text-left hover:no-underline" data-testid={`service-accordion-trigger-${s.slug}`}>
+          <span className="flex flex-1 items-center gap-4">
             <span className="hidden h-11 w-11 shrink-0 items-center justify-center bg-navy text-gold sm:flex"><ServiceIcon name={s.icon} className="h-5 w-5" /></span>
             <span>
               <span className="block font-serif text-xl font-semibold text-navy md:text-2xl">
                 <span className="mr-2 font-mono text-xs text-slatey">{String(i + 1).padStart(2, "0")}</span>{s.name}
               </span>
-              <span className="mt-1 block text-sm font-normal text-slatey">{s.description}</span>
-              {picked > 0 && <span className="mt-2 inline-block bg-gold-subtle px-2 py-0.5 text-xs text-gold-hover">{picked} sub-service{picked > 1 ? "s" : ""} selected</span>}
+              <span className="mt-1 block font-sans text-sm font-normal text-slatey">{s.description}</span>
+              {picked > 0 && <span className="mt-2 inline-block bg-gold-subtle px-2 py-0.5 font-sans text-xs text-gold-hover">{picked} sub-service{picked > 1 ? "s" : ""} selected</span>}
             </span>
           </span>
         </AccordionTrigger>

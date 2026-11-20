@@ -19,6 +19,7 @@ from fastapi import FastAPI, APIRouter, Query, Depends, HTTPException, Request, 
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import ASCENDING, DESCENDING, IndexModel, ReturnDocument
+from pymongo.errors import DuplicateKeyError
 from pydantic import BaseModel, Field, field_validator
 
 ROOT_DIR = Path(__file__).parent
@@ -161,7 +162,7 @@ class SiteContent(BaseModel):
 
 @api_router.get("/content")
 async def get_content():
-    doc = await db.content.find_one({"id": "site"}, {"_id": 0, "id": 0})
+    doc = await db.content.find_one({"id": "site"}, {"_id": 0, "id": 0}) or CONTENT
     return SiteContent(**doc).model_dump()
 
 
@@ -292,7 +293,11 @@ async def create_enquiry(body: EnquiryIn, request: Request):
         "notes": [], "history": [{"at": ts.isoformat(), "by": "Website", "action": "Enquiry submitted"}],
         "created_at": ts.isoformat(), "updated_at": ts.isoformat(),
     })
-    await db.enquiries.insert_one(enq)
+    try:
+        await db.enquiries.insert_one(enq)
+    except DuplicateKeyError:
+        existing = await db.enquiries.find_one({"submission_key": body.submission_key}, {"_id": 0, "reference": 1})
+        return {"reference": existing["reference"], "duplicate": True}
     asyncio.create_task(notify_new_enquiry(enq))
     return {"reference": enq["reference"], "duplicate": False}
 
@@ -493,6 +498,9 @@ class ReorderIn(BaseModel):
 
 @api_router.post("/admin/services/reorder")
 async def reorder_services(body: ReorderIn, admin: dict = Depends(require_admin)):
+    current = {s["slug"] async for s in db.services.find({"deleted": {"$ne": True}}, {"slug": 1, "_id": 0})}
+    if set(body.slugs) != current or len(body.slugs) != len(current):
+        raise HTTPException(status_code=422, detail="Reorder list must contain every service exactly once")
     for i, s in enumerate(body.slugs):
         await db.services.update_one({"slug": s}, {"$set": {"order": i}})
     return {"ok": True}

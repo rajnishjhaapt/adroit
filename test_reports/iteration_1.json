@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 1: full backend + frontend E2E for Adroit corporate site and Clerk-protected admin. Backend: 20/20 pytest pass (public content/services, enquiry validation/honeypot/consent/past-date/invalid-service, submission_key dedupe, rate limit 5/10min -> 429, RBAC no-token 401 / pending 403 / staff scoped 404 & 403 on assign/services/content/users, admin status/assign/notes/history, CSV export, service edit/hide/reorder and content edit with revert). Frontend: all 9 public routes render with header/footer, 18+ shown on home/about/footer, no '11+' anywhere; home hero/CTAs/10 explore links/5 why items/CTA headline verified; Services page has exactly 10 categories with exact sub-service lists (7/8/8/7/8/7/7/7/10/14), accordion expand/collapse, warning when nothing selected, WhatsApp URL & message template exact, Clear Selection resets; all 10 detail pages have intro/process/FAQ/enquiry form, WA href with service name, CTA preselects service on /schedule-consultation; contact & booking validation + success reference IDs; booking dblclick sends 1 POST; mobile 390px no horizontal overflow and mobile menu works. Admin UI (tickets): overview stats, search/kind/status filters, drawer status/assign/notes/history, CSV download, services edit CTA/hide/reorder reflected on public site and reverted, content hero edit reflected and reverted, Staff & Access role selects; staff sees only assigned enquiry and only Overview/Enquiries nav, no assign select, /admin/services redirects; pending sees 'Awaiting approval'; session persists on reload; sign-out returns to /sign-in. One real bug: concurrent same-submission_key POSTs return 500.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/enquiries", "issue": "Race: find_one(submission_key) then insert_one is not atomic. 10 parallel POSTs with same submission_key -> one returned 500 Internal Server Error (pymongo DuplicateKeyError from unique index, logged in backend.err.log). Data stays correct (1 record) but the user gets an error. Fix: wrap insert_one in try/except DuplicateKeyError and return the existing reference with duplicate=True."},
+      {"endpoint": "POST /api/admin/services/reorder", "issue": "No validation that slugs exist / list is complete; partial lists leave duplicate order values."},
+      {"endpoint": "GET /api/content", "issue": "If content doc is missing, SiteContent(**None) raises TypeError -> 500 instead of a handled 404/defaults."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "EnquiryForm consent error", "issue": "Consent validation message has no data-testid (other field errors use data-testid=field-error)", "selector": "form [data-testid$=-consent]", "priority": "LOW"},
+      {"component": "Console", "issue": "React warning 'Invalid DOM property fetchpriority. Did you mean fetchPriority?' on home/admin (hero img)", "selector": "img[fetchpriority]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Schedule consultation", "issues": ["Preferred Date uses native <input type=date> browser picker instead of shadcn Calendar/Popover"]},
+      {"screen": "Services accordion (desktop)", "issues": ["Chevron sits immediately after the title text instead of right-aligned at the row end"]},
+      {"screen": "Service detail 'How we work'", "issues": ["Numbered step squares sit ~12px left of the content column edge (misaligned with headings)"]},
+      {"screen": "Admin pending screen", "issues": ["No explicit 'Sign out' / 'Back to website' button; only the Clerk avatar"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_adroit_api.py", "/app/backend/tests/conftest.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Catch pymongo.errors.DuplicateKeyError around db.enquiries.insert_one in create_enquiry and return the existing reference (duplicate=True) instead of 500",
+    "Optional: replace native date input on booking form with shadcn Calendar date picker",
+    "Optional: fix fetchpriority -> fetchPriority prop, add data-testid to consent error, right-align accordion chevron"
+  ],
+  "critical_code_review_comments": [
+    "server.py create_enquiry: non-atomic dedupe (see race). Also rate limit counts duplicates of same content, which is fine, but rate check runs after DB service lookup - acceptable.",
+    "Rate limiter is in-memory per-process; resets on restart and won't work across multiple replicas.",
+    "X-Forwarded-For first value is client-controlled, so rate limit is bypassable by spoofing the header (behind ingress this may be appended rather than replaced - confirm).",
+    "reorder endpoint does N sequential updates without validation."
+  ],
+  "updated_files": ["/app/backend/tests/test_adroit_api.py", "/app/backend/tests/conftest.py", "/app/memory/test_credentials.md"],
+  "success_rate": {"backend": "95% (20/20 tests pass; 1 race-condition 500 found in extra concurrency probe)", "frontend": "100% of tested flows"},
+  "test_credentials": "Recorded in /app/memory/test_credentials.md (file was empty before): testadmin/teststaff/testpending +clerk_test@example.com with roles admin/staff/pending.",
+  "seed_data_creation": "None persisted. Created ~8 TEST_ enquiries (emails sent to NOTIFY_EMAIL) and deleted them by reference. Pre-existing enquiry ADR-261120-DAD41D (TEST_User, created before this run) left untouched. All service/content edits reverted; verified DB state (order 0-9, all published, hero headline original). User roles unchanged.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run backend tests with `cd /app/backend && python -m pytest tests/ -n 0` (serial; service hide/reorder tests mutate shared state). conftest mints Clerk session tokens via Backend API and vary X-Forwarded-For per test to avoid rate limit. For UI, mint sign_in_tokens and open /sign-in?__clerk_ticket=... (tickets are single-use). Use window.Clerk.signOut() for sign-out.",
+  "rca of the issue": "Concurrent duplicate submit 500: create_enquiry checks for existing submission_key with find_one, then later insert_one. Two requests interleave past the check; unique index on submission_key rejects the second insert with DuplicateKeyError which is unhandled -> 500. Repro: 10 parallel POST /api/enquiries with identical body. Mitigation: try/except DuplicateKeyError -> fetch existing reference and return it."
+}

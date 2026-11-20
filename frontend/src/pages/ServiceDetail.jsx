@@ -77,7 +77,7 @@ export default function ServiceDetail() {
             {s.process?.length > 0 && (
               <div>
                 <SectionHead eyebrow="Process Overview" title="How we work" />
-                <ol className="mt-8 space-y-0 border-l border-gold/50" data-testid="service-process-list">
+                <ol className="ml-4 mt-8 space-y-0 border-l border-gold/50" data-testid="service-process-list">
                   {s.process.map((p, i) => (
                     <li key={p} className="relative pb-8 pl-10 last:pb-0">
                       <span className="absolute -left-4 top-0 flex h-8 w-8 items-center justify-center bg-navy font-mono text-xs text-gold">{i + 1}</span>

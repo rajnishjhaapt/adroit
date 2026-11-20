@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
-import { Show, UserButton } from "@clerk/react";
+import { Show, UserButton, SignOutButton } from "@clerk/react";
 import { LayoutDashboard, Inbox, Layers, FileText, UserCog, Loader2, ExternalLink } from "lucide-react";
 import { useAdminApi } from "@/admin/common";
 import { errMsg } from "@/lib/api";
@@ -19,6 +19,10 @@ const Pending = ({ member }) => (
       <div className="flex justify-center"><UserButton /></div>
       <h1 className="mt-6 text-3xl font-semibold">Awaiting approval</h1>
       <p className="mt-4 text-sm text-slatey">Your account ({member.email}) has been created. An administrator needs to grant you access before you can use the dashboard.</p>
+      <div className="mt-8 flex justify-center gap-3">
+        <a href="/" className="btn-outline-navy" data-testid="pending-back-to-site">Back to website</a>
+        <SignOutButton><button className="btn-navy" data-testid="pending-sign-out">Sign out</button></SignOutButton>
+      </div>
     </div>
   </div>
 );

@@ -118,7 +118,7 @@ export const EnquiryForm = ({ kind = "contact", defaultService = "", prefix = "c
           <input type="checkbox" className="mt-1 h-4 w-4 accent-[#C6A15B]" checked={f.consent} onChange={set("consent")} data-testid={`${prefix}-consent`} />
           <span>I consent to Adroit Management and Tax Consultants contacting me about this enquiry and processing my details as described in the <Link to="/privacy-policy" className="text-gold-hover underline">Privacy Policy</Link>. <span className="text-gold-hover">*</span></span>
         </label>
-        {errors.consent && <span className="mt-1 block text-xs text-red-600">{errors.consent}</span>}
+        {errors.consent && <span className="mt-1 block text-xs text-red-600" data-testid="consent-error">{errors.consent}</span>}
       </div>
       {isBooking && <p className="text-xs text-slatey sm:col-span-2">Your preferred date and time are subject to confirmation by our team.</p>}
       <div className="sm:col-span-2">
