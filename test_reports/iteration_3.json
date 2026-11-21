@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 3: verified Clerk removal and new custom cookie-session admin auth end to end (backend pytest 38/38 + Playwright UI). Checked that Clerk is gone (/sign-in and /sign-up show the site 404, /api/clerk/config is 404, no Clerk scripts or markup). Checked login (wrong password shows an error, correct one opens the dashboard, email is case-insensitive), cookie flags, /auth/me, logout (cookie and server session invalidated), session expiry (API 401 plus UI redirect with the expired message), lockout (6th attempt returns 429), 401 on all 19 protected routes without a cookie, staff 403 and assigned-only scoping, disable and reset-password revoking sessions, staff change-password (old password rejected afterwards, other sessions revoked), and all admin features (stats, search/filter, drawer status/assign to Administrator/notes/history, CSV download, services hide/reorder/edit dialog reverted, content save, Staff & Access add/role/reset). Public site regression passed: home, about, team, partner profile, services selection with WhatsApp, contact form submitted for real, booking form submitted with the POST mocked to save one owner email. Main admin password not changed. All TEST_ data cleaned.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login (lockout) and POST /api/enquiries (rate limit)", "issue": "_client_ip trusts the first X-Forwarded-For value, which the client controls (the lockout test itself depends on this). An attacker can rotate X-Forwarded-For to get past the 5-attempt lockout and brute-force the admin password. Fix: use the right-most or ingress-appended hop, and/or add a per-email lockout that ignores IP."},
+      {"endpoint": "POST /api/auth/login", "issue": "Lockout counter read-then-write is not atomic: parallel bad attempts can all read count<5. Use $inc with upsert."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "AdminShell / useAdminApi", "issue": "Any 401 sends the user to /admin/login with state.expired=true. A first-time visitor who has never logged in, or a user who just pressed Log Out and opens /admin again, sees 'Your session has expired. Please sign in again.' Only show this message when a session actually existed (e.g. AdminShell's initial /auth/me should redirect without expired:true).", "selector": "[data-testid='admin-login-error']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Schedule consultation", "issues": ["Preferred date uses the browser's native <input type=date> (mm/dd/yyyy) instead of the shadcn Calendar/Popover"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_custom_auth.py", "/app/backend/tests/conftest.py", "/app/test_reports/pytest/pytest_iteration3.xml"],
+  "action_items": [
+    "Harden the client IP for the login lockout: do not trust a client-supplied X-Forwarded-For[0]; consider a per-account lockout as well",
+    "Make the lockout increment atomic ($inc upsert)",
+    "Only show the 'session expired' message when a session really expired, not on a first visit or after logout",
+    "Optional: use the shadcn Calendar for the booking date"
+  ],
+  "critical_code_review_comments": [
+    "server.py is 745 lines, over the 700-line guideline: split auth/users/enquiries into routers",
+    "_admin_hash(): once the admin changes their password, db.meta.admin_credentials permanently overrides ADMIN_PASSWORD_HASH from env. Rotating the env hash later has no effect unless that meta doc is deleted. Document this or add a version check",
+    "The preview ingress rewrites Set-Cookie to SameSite=None; Partitioned (the backend correctly sends SameSite=strict, checked directly). Expected in production, but CSRF protection relies on SameSite only: there is no CSRF token and CORS allow_credentials is used with configurable origins",
+    "Staff users stay visible in /admin/assignees after demotion to disabled (filtered by role, OK). Revocation on role change only happens for 'disabled'; admin->staff demotion takes effect per request since the role is re-read, OK",
+    "Legacy Clerk test suites (test_adroit_api.py, test_iteration2_additions.py) no longer work; they are now skipped at module level"
+  ],
+  "updated_files": ["/app/backend/tests/conftest.py (rewritten for cookie auth)", "/app/backend/tests/test_custom_auth.py (new)", "/app/backend/tests/test_adroit_api.py (module-level skip)", "/app/backend/tests/test_iteration2_additions.py (module-level skip)", "/app/memory/test_credentials.md (updated to the custom admin login)"],
+  "success_rate": {"backend": "100% (38/38)", "frontend": "100% of flows tested; 1 low-priority UX message issue"},
+  "test_credentials": "Admin dhrubj49@gmail.com / n9eJ4r-RlGeix-60cLue (unchanged). test_credentials.md was stale (still described Clerk) and has been updated.",
+  "seed_data_creation": "None persisted. 4 real TEST_ enquiries were created in total, 1 over the 'under 4' budget (a full-suite rerun created one more), so the owner got 4 notification emails. All were deleted along with the TEST_ staff users and their sessions. Service hide/reorder was reverted (order values were renumbered 0..n but the relative order is the same). Content was re-saved unchanged.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run `cd /app/backend && python -m pytest tests/test_custom_auth.py -n 0`. It must be serial because of shared STATE, and each run creates 1 TEST_ enquiry, which emails the owner. conftest reads MONGO_URL/DB_NAME via dotenv_values and does not print them. The Playwright runtime has no pymongo: for UI session-expiry tests, start a detached watcher with `(setsid nohup python script.py > log 2>&1 < /dev/null &)` that expires admin sessions created after its start time. The booking date is a native date input, so use fill('YYYY-MM-DD').",
+  "rca of the issue": "SameSite=None seen on the public URL comes from the Emergent preview ingress rewriting Set-Cookie; localhost:8001 returns SameSite=strict. Not an app bug."
+}

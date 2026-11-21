@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Inbox, Layers, FileText, UserCog, Loader2, ExternalLink, LogOut, KeyRound } from "lucide-react";
-import { useAdminApi } from "@/admin/common";
 import { ChangePasswordDialog } from "@/admin/ChangePassword";
 import { api, errMsg } from "@/lib/api";
 
@@ -14,15 +13,17 @@ const LINKS = [
 ];
 
 function Shell() {
-  const call = useAdminApi();
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
   const [error, setError] = useState("");
   const [pwOpen, setPwOpen] = useState(false);
 
   useEffect(() => {
-    call("get", "/auth/me").then(setMember).catch((e) => { if (e?.response?.status !== 401) setError(errMsg(e)); });
-  }, [call]);
+    api.get("/auth/me").then((r) => setMember(r.data)).catch((e) => {
+      if (e?.response?.status === 401) navigate("/admin/login", { replace: true });
+      else setError(errMsg(e));
+    });
+  }, [navigate]);
 
   const logout = async () => {
     await api.post("/auth/logout").catch(() => {});

@@ -1,36 +1,17 @@
-# Shared fixtures: base URL, Clerk session tokens for role test users, cleanup of TEST_ enquiries
+# Shared fixtures: base URL, cookie-session login helpers (custom admin auth, Clerk removed), DB handle, cleanup
 import os
 import uuid
 import pytest
 import requests
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from pymongo import MongoClient
 
-load_dotenv("/app/backend/.env")
-load_dotenv("/app/frontend/.env")
-BASE_URL = os.environ["REACT_APP_BACKEND_URL"].rstrip("/")
-CLERK = "https://api.clerk.com/v1"
-H = {"Authorization": f"Bearer {os.environ['CLERK_SECRET_KEY']}", "User-Agent": "emergent-test"}
-USERS = {
-    "admin": "user_3MNWLk3VxlUTj6nRyKPQ9C9wzMO",
-    "staff": "user_3MNWLo0THJv1X4XskvihMfxxQwA",
-    "pending": "user_3MNWLpR3bail9hhEnvrSHBpLwXw",
-}
-_sessions = {}
-
-
-def token_for(role: str) -> str:
-    if role not in _sessions:
-        r = requests.post(f"{CLERK}/sessions", headers=H, json={"user_id": USERS[role]}, timeout=15)
-        r.raise_for_status()
-        _sessions[role] = r.json()["id"]
-    r = requests.post(f"{CLERK}/sessions/{_sessions[role]}/tokens", headers=H, json={"expires_in_seconds": 600}, timeout=15)
-    r.raise_for_status()
-    return r.json()["jwt"]
-
-
-def auth(role):
-    return {"Authorization": f"Bearer {token_for(role)}"}
+_fe = dotenv_values("/app/frontend/.env")
+_be = dotenv_values("/app/backend/.env")
+BASE_URL = _fe["REACT_APP_BACKEND_URL"].rstrip("/")
+API = f"{BASE_URL}/api"
+ADMIN_EMAIL = "dhrubj49@gmail.com"
+ADMIN_PASSWORD = "n9eJ4r-RlGeix-60cLue"
 
 
 def fwd():
@@ -38,10 +19,26 @@ def fwd():
 
 
 def db():
-    return MongoClient(os.environ["MONGO_URL"])[os.environ["DB_NAME"]]
+    return MongoClient(_be["MONGO_URL"])[_be["DB_NAME"]]
+
+
+def login(email, password):
+    s = requests.Session()
+    r = s.post(f"{API}/auth/login", json={"email": email, "password": password}, headers=fwd(), timeout=30)
+    return s, r
 
 
 CREATED_REFS = []
+CREATED_USER_IDS = []
+
+
+@pytest.fixture(scope="session")
+def admin():
+    s, r = login(ADMIN_EMAIL, ADMIN_PASSWORD)
+    if r.status_code != 200:
+        pytest.skip(f"admin login failed {r.status_code} {r.text}")
+    yield s
+    s.post(f"{API}/auth/logout")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -50,5 +47,6 @@ def cleanup():
     d = db()
     if CREATED_REFS:
         d.enquiries.delete_many({"reference": {"$in": CREATED_REFS}, "full_name": {"$regex": "^TEST_"}})
-    for sid in _sessions.values():
-        requests.post(f"{CLERK}/sessions/{sid}/revoke", headers=H, timeout=15)
+    if CREATED_USER_IDS:
+        d.sessions.delete_many({"user_id": {"$in": CREATED_USER_IDS}})
+        d.users.delete_many({"user_id": {"$in": CREATED_USER_IDS}, "name": {"$regex": "^TEST_"}})

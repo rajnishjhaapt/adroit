@@ -58,8 +58,8 @@ INDEXES: dict[str, list[IndexModel]] = {
     "sessions": [IndexModel([("token_hash", ASCENDING)], name="token_hash", unique=True),
                  IndexModel([("expires_at", ASCENDING)], name="expires_ttl", expireAfterSeconds=0),
                  IndexModel([("user_id", ASCENDING)], name="session_user")],
-    "login_attempts": [IndexModel([("key", ASCENDING)], name="key", unique=True),
-                       IndexModel([("last", ASCENDING)], name="attempts_ttl", expireAfterSeconds=3600)],
+    "login_failures": [IndexModel([("email", ASCENDING), ("at", DESCENDING)], name="email_at"),
+                       IndexModel([("at", ASCENDING)], name="failures_ttl", expireAfterSeconds=3600)],
 }
 
 
@@ -87,7 +87,7 @@ ACTIVE_ROLES = ("admin", "staff")
 ADMIN_ID = "admin"
 SESSION_COOKIE = "adroit_session"
 SESSION_TTL = timedelta(hours=int(os.environ["SESSION_HOURS"]))
-LOCK_AFTER, LOCK_WINDOW = 5, timedelta(minutes=15)
+LOCK_AFTER, LOCK_AFTER_EMAIL, LOCK_WINDOW = 5, 10, timedelta(minutes=15)
 
 
 def effective_role(role) -> str:
@@ -362,10 +362,9 @@ def _set_session_cookie(response: Response, token: str) -> None:
 @api_router.post("/auth/login")
 async def login(body: LoginIn, request: Request, response: Response):
     email, ip, now = body.email.strip().lower(), _client_ip(request), datetime.now(timezone.utc)
-    key = f"{ip}:{email}"
-    att = await db.login_attempts.find_one({"key": key}, {"_id": 0})
-    recent = att and _aware(att["last"]) > now - LOCK_WINDOW
-    if recent and att["count"] >= LOCK_AFTER:
+    since = {"$gt": now - LOCK_WINDOW}
+    if (await db.login_failures.count_documents({"email": email, "ip": ip, "at": since}) >= LOCK_AFTER
+            or await db.login_failures.count_documents({"email": email, "at": since}) >= LOCK_AFTER_EMAIL):
         raise HTTPException(status_code=429, detail="Too many failed attempts. Please try again in 15 minutes.")
     user_id = None
     if email == _admin_email():
@@ -377,10 +376,9 @@ async def login(body: LoginIn, request: Request, response: Response):
                 and await asyncio.to_thread(verify_password, body.password, u["password_hash"])):
             user_id = u["user_id"]
     if not user_id:
-        await db.login_attempts.update_one(
-            {"key": key}, {"$set": {"key": key, "last": now, "count": (att["count"] + 1) if recent else 1}}, upsert=True)
+        await db.login_failures.insert_one({"email": email, "ip": ip, "at": now})
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    await db.login_attempts.delete_one({"key": key})
+    await db.login_failures.delete_many({"email": email, "ip": ip})
     token = new_token()
     await db.sessions.insert_one({"token_hash": token_digest(token), "user_id": user_id, "ip": ip,
                                   "created_at": now, "expires_at": now + SESSION_TTL})
