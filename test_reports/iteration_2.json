@@ -1,0 +1,35 @@
+{
+  "summary": "Tested iteration-2 additions: 2 new service categories (API + Services accordion/checkbox/WhatsApp + detail pages + contact/booking dropdowns + booking submit), partner cards & /team/<slug> profiles, About Vision/Mission/Core Values, admin Services editor and Website Content editor (no-op save keeps content identical, profiles still work), admin enquiries, mobile 390px overflow. All requested functionality works. One content defect: services_intro still says 'Ten service categories...' on Home and Services hero although there are now 12.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/content (services_intro)", "issue": "Stored services_intro still reads 'Ten service categories covering taxation, accounting, ... e-commerce reconciliation.' – shown on Home services section and Services page hero. Now 12 categories (audit & trusts not mentioned). seed v2 did not update it."},
+      {"endpoint": "/api/sitemap.xml", "issue": "Partner profile pages /team/awdhesh-jha, /team/arun-rana, /team/ajay-kumar not included in sitemap (new services are included)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Services page", "issues": ["Seo description and hero title ('taxation, accounting and compliance') don't mention the new Audit & Assurance / Trust services"]},
+      {"screen": "Partner profile (mobile 390px)", "issues": ["Quote is text-3xl on mobile - very large, and floating call/WhatsApp buttons overlap the quote text; consider text-2xl on mobile"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_iteration2_additions.py", "/app/backend/tests/test_adroit_api.py", "/app/test_reports/pytest/pytest_results_iter2.xml"],
+  "action_items": [
+    "Update services_intro content (DB + seed CONTENT) to reflect 12 categories incl. audit & assurance and trust registration (e.g. a seed_v3 migration that only replaces the value if it still equals the old default)",
+    "Optional: add /team/<slug> partner pages to sitemap.xml",
+    "Optional: update Services page Seo description/hero title to include audit & trust services; reduce mobile quote size on partner profile"
+  ],
+  "critical_code_review_comments": [
+    "Team.jsx keys PartnerCard by p.slug; slug comes from backend update_content so OK, but partners added via direct DB without slug would break links (backend fallback CONTENT path doesn't slugify)",
+    "ContentAdmin core value text inputs and partner bio/designation inputs lack data-testid",
+    "update_content accepts arbitrary client-supplied partner slug without slugify/validation (e.g. 'a/b' would produce broken /team links) – consider normalising p.slug through _slugify"
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration2_additions.py", "/app/backend/tests/test_adroit_api.py (EXPECTED now includes 2 new services)"],
+  "success_rate": {"backend": "94% (15/16; only failure = stale services_intro text)", "frontend": "100% of requested flows"},
+  "seed_data_creation": "None persistent. Created 2 TEST_ booking enquiries (1 API, 1 UI) with Trust service – both deleted by reference. Temporary TEST Partner added via PUT /admin/content and reverted; Trust service sub_services edited (+TEST_Sub) and reverted; content verified identical to original.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run `cd /app/backend && python -m pytest tests/test_iteration2_additions.py -n 0` (creates 1 enquiry). Old test_adroit_api.py creates many enquiries (rate-limit test) - run selectively to keep owner emails low. Admin UI: mint sign_in_token for testadmin and open /sign-in?__clerk_ticket=...; it redirects to /admin."
+}

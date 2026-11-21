@@ -132,7 +132,7 @@ CONTENT = {
     "hero_headline": "Your Trusted Partner in Audit, Taxation & Business Advisory",
     "hero_text": "Comprehensive financial, taxation, accounting and business consultancy solutions designed to support your business at every stage.",
     "cta_headline": "Let’s Discuss Your Business Requirements",
-    "services_intro": "Ten service categories covering taxation, accounting, compliance, registrations, appeals, finance documentation and e-commerce reconciliation.",
+    "services_intro": "Service categories covering audit and assurance, taxation, accounting, compliance, registrations, appeals, finance documentation, trust formation and e-commerce reconciliation.",
     "why_choose": [
         {"title": "Comprehensive Professional Services", "text": "Audit, taxation, accounting, compliance and business advisory services available under one roof."},
         {"title": "Business-Focused Solutions", "text": "Practical advice and support shaped around the needs and stage of your business."},

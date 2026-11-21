@@ -94,8 +94,8 @@ export default function Services() {
 
   return (
     <>
-      <Seo title="Our Services – GST, Accounting, TDS, Incorporation & More" description="GST, accounting, company incorporation, PF & ESIC, business licences, tax appeals, notice management, TDS, business loan documentation and e-commerce reconciliation services." />
-      <PageHero eyebrow="Our Services" title="Professional services across taxation, accounting and compliance" text={c.services_intro} testId="services-hero" />
+      <Seo title="Our Services – GST, Accounting, TDS, Incorporation & More" description="GST, accounting, company incorporation, PF & ESIC, business licences, tax appeals, notice management, TDS, business loan documentation, e-commerce reconciliation, audit & assurance and trust registration services." />
+      <PageHero eyebrow="Our Services" title="Professional services across audit, taxation, accounting and compliance" text={c.services_intro} testId="services-hero" />
       <section className="bg-mist py-16 pb-40 md:py-24 md:pb-40" data-testid="services-accordion-section">
         <div className="container-x">
           <div className="mb-10 flex flex-col gap-2 border-l-2 border-gold bg-white px-6 py-5 md:flex-row md:items-center md:justify-between">

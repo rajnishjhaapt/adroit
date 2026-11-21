@@ -41,6 +41,13 @@ The client's full master prompt is in the conversation history. In short: build 
 - SEO metadata, robots.txt and sitemap.
 - Testing iteration 1 passed: backend 20/20 and frontend 100%. Fixes after testing: concurrent duplicate submissions no longer return an error, reorder is validated, and small UI issues are fixed.
 
+## Implemented (2026-11-21)
+- Second office address added (Ofc. No. 103, H36, Sector 63, Near Electronic City Metro, Noida, 201301), editable in admin.
+- Two new service categories (Audit & Assurance Services with 11 sub-services, and Trust Registration, Formation & Compliance Services with 15), added after the original 10 through seed v2. They are included automatically in the checkbox and WhatsApp selection, the form dropdowns, the footer and the sitemap.
+- Partner profiles: clickable cards and /team/:slug pages with the exact quote and description, plus an editable photo URL (initials are shown when empty).
+- About Us: Vision, Mission and six Core Values, all editable in admin.
+- Testing iteration 2 passed. The services intro text and the sitemap were fixed afterwards.
+
 ## Backlog
 - P1: Client to review the content for ICAI and regulatory compliance. Add verified document lists and FAQs per service through the admin.
 - P1: Add the map only once the exact office location is verified.

@@ -206,6 +206,8 @@ async def sitemap(request: Request):
     base = f"https://{host}"
     paths = ["/", "/about", "/services", "/team", "/contact", "/schedule-consultation", "/privacy-policy", "/terms-and-conditions"]
     paths += [f"/services/{s['slug']}" async for s in db.services.find({"published": True}, {"slug": 1, "_id": 0})]
+    content = await db.content.find_one({"id": "site"}, {"partners.slug": 1, "_id": 0}) or {}
+    paths += [f"/team/{p['slug']}" for p in content.get("partners", []) if isinstance(p, dict) and p.get("slug")]
     urls = "".join(f"<url><loc>{base}{p}</loc></url>" for p in paths)
     xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
     return Response(content=xml, media_type="application/xml")
@@ -585,6 +587,10 @@ async def seed() -> None:
         if sets:
             await db.content.update_one({"id": "site"}, {"$set": sets})
         await db.meta.update_one({"id": "seed_v2"}, {"$set": {"id": "seed_v2", "at": now_iso()}}, upsert=True)
+    if not await db.meta.find_one({"id": "seed_v3"}):
+        await db.content.update_one({"id": "site", "services_intro": {"$regex": "^Ten service categories"}},
+                                    {"$set": {"services_intro": CONTENT["services_intro"]}})
+        await db.meta.update_one({"id": "seed_v3"}, {"$set": {"id": "seed_v3", "at": now_iso()}}, upsert=True)
 
 
 app.include_router(api_router)

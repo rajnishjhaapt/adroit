@@ -34,7 +34,7 @@ export default function PartnerProfile() {
         <div className="container-x grid gap-16 lg:grid-cols-12">
           <blockquote className="border-l-2 border-gold pl-8 lg:col-span-5" data-testid="partner-profile-quote">
             <Quote className="h-8 w-8 text-gold" />
-            <p className="mt-6 font-serif text-3xl italic leading-snug text-navy">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</p>
+            <p className="mt-6 font-serif text-2xl italic md:text-3xl leading-snug text-navy">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</p>
           </blockquote>
           <div className="space-y-6 text-base leading-relaxed text-ink md:text-lg lg:col-span-7" data-testid="partner-profile-bio">
             {p.bio.map((para, i) => <p key={i}>{para}</p>)}

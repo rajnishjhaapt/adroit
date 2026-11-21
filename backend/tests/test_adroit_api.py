@@ -11,6 +11,7 @@ EXPECTED = {
     "PF & ESIC Services": 7, "Business Licences & Registrations": 8, "Tax Appeal Services": 7,
     "Income Tax & GST Notice Management": 7, "TDS Services": 7, "Business Loan & Banking Finance": 10,
     "E-Commerce Accounting & Reconciliation Services": 14,
+    "Audit & Assurance Services": 11, "Trust Registration, Formation & Compliance Services": 15,
 }
 
 
