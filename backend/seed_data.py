@@ -146,10 +146,65 @@ CONTENT = {
     ],
     "about_approach": "We believe in a structured and transparent way of working. Every engagement begins with understanding your requirement, followed by a careful review of your records, clear documentation and regular communication until the work is complete.",
     "about_commitment": "Our commitment is to provide timely, accurate and responsive assistance. We keep you informed at every step and treat your financial information with care and confidentiality.",
-    "partners": ["Awdhesh Jha", "Arun Rana", "Ajay Kumar"],
+    "partners": [],
     "firms": [
         {"name": "AMKN & Associates", "members": ["Nitin Kaushik", "Abhijeet Kumar Mehra"]},
         {"name": "DMD & Associates", "members": ["Dheeraj Joshi", "Deepa Joshi"]},
         {"name": "Swati Gupta & Company", "members": ["Swati Gupta"]},
     ],
 }
+
+PARTNER_DESIGNATION = "Partner – Adroit Management and Tax Consultants"
+
+PARTNERS = [
+    {"slug": "awdhesh-jha", "name": "Awdhesh Jha", "designation": PARTNER_DESIGNATION, "photo_url": "",
+     "quote": "Success is not just about building a business; it’s about building trust, creating value and making a lasting impact.",
+     "bio": ["With a vision of excellence and a commitment to integrity, I believe in turning challenges into opportunities and building long-term relationships through knowledge, dedication and professional ethics.",
+             "My philosophy is simple: Never compromise on integrity, never stop learning, and always strive to deliver more than expected."]},
+    {"slug": "arun-rana", "name": "Arun Rana", "designation": PARTNER_DESIGNATION, "photo_url": "",
+     "quote": "Great leadership is not about being ahead of others; it is about bringing out the best in everyone.",
+     "bio": ["I believe that every challenge brings an opportunity to learn, grow and create something meaningful. With a focus on strategic thinking, professional excellence and teamwork, my aim is to help businesses move forward with confidence.",
+             "My philosophy is simple: Lead with purpose, work with passion and build success on a foundation of trust and commitment."]},
+    {"slug": "ajay-kumar", "name": "Ajay Kumar", "designation": PARTNER_DESIGNATION, "photo_url": "",
+     "quote": "True success is achieved when knowledge meets dedication and every effort creates lasting value.",
+     "bio": ["I believe that consistency, integrity and a commitment to excellence are the pillars of long-term success. My approach is to understand challenges, find practical solutions and build meaningful professional relationships through transparency and dedication.",
+             "My philosophy is simple: Stay committed, keep improving and let the quality of your work speak for itself."]},
+]
+
+ABOUT_V2 = {
+    "vision": "To become a trusted and leading professional consultancy firm, recognised for excellence, integrity and innovation in Audit, Taxation and Business Advisory. We aspire to empower businesses and entrepreneurs with the right guidance, helping them achieve sustainable growth and long-term success.",
+    "mission": "Our mission is to deliver reliable, transparent and result-oriented professional services that create real value for our clients. We are committed to providing practical financial solutions, maintaining the highest standards of professional ethics and building lasting relationships through trust, knowledge and dedication.",
+    "core_values": [
+        {"title": "Integrity", "text": "Upholding honesty and professional ethics."},
+        {"title": "Trust", "text": "Building long-term relationships through transparency."},
+        {"title": "Excellence", "text": "Delivering quality in every assignment."},
+        {"title": "Commitment", "text": "Putting our clients’ interests first."},
+        {"title": "Innovation", "text": "Adopting smarter and practical solutions."},
+        {"title": "Growth", "text": "Creating value for clients, businesses and society."},
+    ],
+}
+
+CONTENT.update(partners=PARTNERS, **ABOUT_V2)
+
+SERVICES_V2 = [
+    _svc("audit-assurance-services", "Audit & Assurance Services", "ShieldCheck",
+         "Comprehensive audit, assurance and risk management services to ensure financial accuracy, transparency and regulatory compliance.",
+         ["Statutory Audit", "Tax Audit", "Internal Audit", "Bank Audit", "Stock Audit", "Payroll Audit",
+          "Concurrent Audit", "Management Audit", "Revenue Audit", "Compliance Audit", "Due Diligence & Special"],
+         "Schedule a Call with an Audit & Assurance Expert",
+         "We carry out a range of audit and assurance assignments that help businesses review the accuracy of their financial information, strengthen internal controls and meet their regulatory obligations.",
+         ["Companies and entities requiring a statutory audit", "Taxpayers who need a tax audit",
+          "Businesses wanting an independent review of internal controls", "Organisations evaluating a transaction or business through due diligence"]),
+    _svc("trust-registration-formation-compliance", "Trust Registration, Formation & Compliance Services", "Handshake",
+         "Complete solutions for trust formation, registration, taxation and compliance.",
+         ["Public Charitable Trust Formation", "Private Trust Formation", "Religious & Educational Trust Formation",
+          "Trust Deed Drafting & Registration", "Trustee & Settlor Documentation", "PAN & TAN Application",
+          "12AB Registration", "80G Registration", "NGO Darpan Registration", "CSR-1 Registration",
+          "FCRA Registration Assistance", "Trust Accounting & Bookkeeping", "Trust Audit & ITR Filing",
+          "Annual Compliance & Tax Advisory", "Trust Deed Amendment & Trustee Changes"],
+         "Schedule a Call with a Trust Formation Expert",
+         "From drafting the trust deed to registrations, accounting, audit and annual compliance, we assist founders and trustees at each stage of setting up and running a trust.",
+         ["Individuals or groups planning to set up a charitable, religious, educational or private trust",
+          "Existing trusts seeking 12AB, 80G, NGO Darpan or CSR-1 registration",
+          "Trusts that need accounting, audit and return filing support", "Trusts amending their deed or changing trustees"]),
+]

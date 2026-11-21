@@ -23,16 +23,21 @@ const L = ({ label, full, children }) => (
 export default function ContentAdmin() {
   const call = useAdminApi();
   const { content, reload } = useSite();
-  const [f, setF] = useState(() => ({ ...content, about_intro: content.about_intro.join("\n\n"), partners: content.partners.join("\n"),
+  const [f, setF] = useState(() => ({ ...content, about_intro: content.about_intro.join("\n\n"),
+    partners: content.partners.map((p) => ({ ...p, bio: p.bio.join("\n\n") })), core_values: content.core_values || [],
+    vision: content.vision || "", mission: content.mission || "",
     firms: content.firms.map((x) => ({ name: x.name, members: x.members.join("\n") })) }));
   const [busy, setBusy] = useState(false);
   const inp = (k, props = {}) => <input className="field" value={f[k]} onChange={(e) => setF((p) => ({ ...p, [k]: e.target.value }))} data-testid={`content-${k}`} {...props} />;
   const area = (k, rows = 3) => <textarea className="field" rows={rows} value={f[k]} onChange={(e) => setF((p) => ({ ...p, [k]: e.target.value }))} data-testid={`content-${k}`} />;
   const upd = (key, i, k, v) => setF((p) => ({ ...p, [key]: p[key].map((x, j) => (j === i ? { ...x, [k]: v } : x)) }));
 
+  const paras = (v) => v.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
   const save = async () => {
     setBusy(true);
-    const body = { ...f, about_intro: f.about_intro.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean), partners: lines(f.partners),
+    const body = { ...f, about_intro: paras(f.about_intro),
+      partners: f.partners.filter((x) => x.name.trim()).map((x) => ({ ...x, name: x.name.trim(), bio: paras(x.bio) })),
+      core_values: f.core_values.filter((x) => x.title.trim()),
       firms: f.firms.filter((x) => x.name.trim()).map((x) => ({ name: x.name.trim(), members: lines(x.members) })) };
     try { await call("put", "/admin/content", body); await reload(); toast.success("Website content saved"); }
     catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
@@ -75,9 +80,35 @@ export default function ContentAdmin() {
         <L label="Introduction (separate paragraphs with a blank line)" full>{area("about_intro", 6)}</L>
         <L label="Professional approach" full>{area("about_approach", 4)}</L>
         <L label="Commitment to client service" full>{area("about_commitment", 4)}</L>
+        <L label="Our Vision" full>{area("vision", 4)}</L>
+        <L label="Our Mission" full>{area("mission", 4)}</L>
+        <div className="space-y-3 sm:col-span-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-navy">Core Values</p>
+          {f.core_values.map((w, i) => (
+            <div key={i} className="grid gap-2 border border-slate-200 p-3 sm:grid-cols-[1fr_2fr_auto]">
+              <input className="field" value={w.title} onChange={(e) => upd("core_values", i, "title", e.target.value)} data-testid={`content-value-title-${i}`} />
+              <input className="field" value={w.text} onChange={(e) => upd("core_values", i, "text", e.target.value)} />
+              <button className="p-2 text-red-700" onClick={() => setF((p) => ({ ...p, core_values: p.core_values.filter((_, j) => j !== i) }))} aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+          <button className="btn-outline-navy px-3 py-2" onClick={() => setF((p) => ({ ...p, core_values: [...p.core_values, { title: "", text: "" }] }))}><Plus className="h-4 w-4" />Add value</button>
+        </div>
       </Card>
       <Card title="Team">
-        <L label="Partners of Adroit (one per line)" full>{area("partners", 4)}</L>
+        <div className="space-y-3 sm:col-span-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-navy">Partners of Adroit</p>
+          {f.partners.map((x, i) => (
+            <div key={i} className="grid gap-2 border border-slate-200 p-3 sm:grid-cols-2" data-testid={`content-partner-${i}`}>
+              <input className="field" placeholder="Name" value={x.name} onChange={(e) => upd("partners", i, "name", e.target.value)} data-testid={`content-partner-name-${i}`} />
+              <input className="field" placeholder="Designation" value={x.designation} onChange={(e) => upd("partners", i, "designation", e.target.value)} />
+              <textarea className="field sm:col-span-2" rows={2} placeholder="Quote" value={x.quote} onChange={(e) => upd("partners", i, "quote", e.target.value)} data-testid={`content-partner-quote-${i}`} />
+              <textarea className="field sm:col-span-2" rows={5} placeholder="Profile description (separate paragraphs with a blank line)" value={x.bio} onChange={(e) => upd("partners", i, "bio", e.target.value)} />
+              <input className="field" placeholder="Photo URL (https://…) – leave empty to show initials" value={x.photo_url} onChange={(e) => upd("partners", i, "photo_url", e.target.value)} data-testid={`content-partner-photo-${i}`} />
+              <button className="justify-self-end p-2 text-red-700" onClick={() => setF((p) => ({ ...p, partners: p.partners.filter((_, j) => j !== i) }))} aria-label="Remove partner"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+          <button className="btn-outline-navy px-3 py-2" onClick={() => setF((p) => ({ ...p, partners: [...p.partners, { slug: "", name: "", designation: "Partner – Adroit Management and Tax Consultants", quote: "", bio: "", photo_url: "" }] }))} data-testid="content-add-partner"><Plus className="h-4 w-4" />Add partner</button>
+        </div>
         <div className="space-y-3 sm:col-span-2">
           <p className="text-xs font-medium uppercase tracking-wider text-navy">Associated CA Firms</p>
           {f.firms.map((x, i) => (

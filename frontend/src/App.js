@@ -8,6 +8,7 @@ import About from "@/pages/About";
 import Services from "@/pages/Services";
 import ServiceDetail from "@/pages/ServiceDetail";
 import Team from "@/pages/Team";
+import PartnerProfile from "@/pages/PartnerProfile";
 import Contact from "@/pages/Contact";
 import Schedule from "@/pages/Schedule";
 import { Privacy, Terms } from "@/pages/Legal";
@@ -39,6 +40,7 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/services/:slug" element={<ServiceDetail />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/team/:slug" element={<PartnerProfile />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/schedule-consultation" element={<Schedule />} />
             <Route path="/privacy-policy" element={<Privacy />} />

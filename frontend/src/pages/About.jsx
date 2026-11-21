@@ -1,9 +1,50 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Eye, Target, ShieldCheck, Handshake, Award, HeartHandshake, Lightbulb, TrendingUp, Gem } from "lucide-react";
 import { useSite, experienceLabel } from "@/lib/site";
 import { Seo } from "@/components/site/Seo";
 import { PageHero, SectionHead, ConsultCta } from "@/components/site/Blocks";
 import { ServiceIcon } from "@/components/site/ServiceIcon";
+
+const VALUE_ICONS = [ShieldCheck, Handshake, Award, HeartHandshake, Lightbulb, TrendingUp];
+
+const Statement = ({ icon: Icon, eyebrow, text, testId, dark }) => (
+  <div className={`relative p-10 md:p-14 ${dark ? "lattice bg-navy text-white" : "border border-gold/40 bg-white"}`} data-testid={testId}>
+    <span className={`flex h-14 w-14 items-center justify-center border ${dark ? "border-gold text-gold" : "border-navy bg-navy text-gold"}`}><Icon className="h-6 w-6" strokeWidth={1.5} /></span>
+    <h2 className={`mt-8 text-3xl font-semibold sm:text-4xl ${dark ? "text-white" : ""}`}>{eyebrow}</h2>
+    <div className="gold-rule mt-6" />
+    <p className={`mt-6 font-serif text-xl leading-relaxed md:text-2xl ${dark ? "text-white/85" : "text-ink"}`}>{text}</p>
+  </div>
+);
+
+const VisionMission = ({ c }) => (c.vision || c.mission) ? (
+  <section className="bg-mist py-24 md:py-32" data-testid="about-vision-mission">
+    <div className="container-x grid gap-6 lg:grid-cols-2">
+      {c.vision && <Statement icon={Eye} eyebrow="Our Vision" text={c.vision} testId="about-vision" dark />}
+      {c.mission && <Statement icon={Target} eyebrow="Our Mission" text={c.mission} testId="about-mission" />}
+    </div>
+  </section>
+) : null;
+
+const CoreValues = ({ values }) => values?.length ? (
+  <section className="bg-white py-24 md:py-32" data-testid="about-core-values">
+    <div className="container-x">
+      <SectionHead eyebrow="What Guides Us" title="Our Core Values" />
+      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {values.map((v, i) => {
+          const Icon = VALUE_ICONS[i] || Gem;
+          return (
+            <div key={v.title} className="card-lift group relative border border-slate-200 bg-white p-8" data-testid={`core-value-${v.title.toLowerCase()}`}>
+              <span className="absolute right-6 top-6 font-mono text-xs text-slatey">{String(i + 1).padStart(2, "0")}</span>
+              <span className="flex h-12 w-12 items-center justify-center bg-navy text-gold transition-colors group-hover:bg-gold group-hover:text-navy"><Icon className="h-6 w-6" strokeWidth={1.5} /></span>
+              <h3 className="mt-6 text-2xl font-semibold">{v.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slatey">{v.text}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+) : null;
 
 export default function About() {
   const { content: c, services } = useSite();
@@ -48,6 +89,9 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      <VisionMission c={c} />
+      <CoreValues values={c.core_values} />
 
       <section className="bg-mist py-24 md:py-32" data-testid="about-expertise-section">
         <div className="container-x">

@@ -28,11 +28,11 @@ load_dotenv(ROOT_DIR / '.env')
 try:
     from backend.clerk_auth import clerk_router, require_user
     from backend.notify import notify_new_enquiry
-    from backend.seed_data import SERVICES, CONTENT
+    from backend.seed_data import SERVICES, CONTENT, SERVICES_V2, PARTNERS, ABOUT_V2
 except ModuleNotFoundError:
     from clerk_auth import clerk_router, require_user
     from notify import notify_new_enquiry
-    from seed_data import SERVICES, CONTENT
+    from seed_data import SERVICES, CONTENT, SERVICES_V2, PARTNERS, ABOUT_V2
 
 client = AsyncIOMotorClient(os.environ['MONGO_URL'])
 db = client[os.environ['DB_NAME']]
@@ -140,6 +140,23 @@ class Firm(BaseModel):
     members: List[str]
 
 
+class Partner(BaseModel):
+    slug: str = ""
+    name: str = Field(min_length=1, max_length=120)
+    designation: str = Field(default="", max_length=200)
+    quote: str = Field(default="", max_length=500)
+    bio: List[str] = []
+    photo_url: str = Field(default="", max_length=500)
+
+    @field_validator("photo_url")
+    @classmethod
+    def https_only(cls, v):
+        v = (v or "").strip()
+        if v and not (v.startswith("https://") or v.startswith("/")):
+            raise ValueError("Photo URL must start with https://")
+        return v
+
+
 class SiteContent(BaseModel):
     company_name: str = Field(min_length=1, max_length=120)
     tagline: str = Field(max_length=200)
@@ -157,8 +174,11 @@ class SiteContent(BaseModel):
     about_intro: List[str]
     about_approach: str = Field(max_length=1500)
     about_commitment: str = Field(max_length=1500)
-    partners: List[str]
+    partners: List["Partner"]
     firms: List[Firm]
+    vision: str = Field(default="", max_length=2000)
+    mission: str = Field(default="", max_length=2000)
+    core_values: List[WhyItem] = []
 
 
 @api_router.get("/content")
@@ -509,6 +529,13 @@ async def reorder_services(body: ReorderIn, admin: dict = Depends(require_admin)
 
 @api_router.put("/admin/content")
 async def update_content(body: SiteContent, admin: dict = Depends(require_admin)):
+    seen = set()
+    for p in body.partners:
+        p.slug = base = p.slug or _slugify(p.name)
+        i = 2
+        while p.slug in seen:
+            p.slug, i = f"{base}-{i}", i + 1
+        seen.add(p.slug)
     await db.content.update_one({"id": "site"}, {"$set": body.model_dump()}, upsert=True)
     return body.model_dump()
 
@@ -546,6 +573,18 @@ async def seed() -> None:
             await db.services.update_one({"slug": s["slug"]}, {"$setOnInsert": {**s, "order": i}}, upsert=True)
         await db.content.update_one({"id": "site"}, {"$setOnInsert": {"id": "site", **CONTENT}}, upsert=True)
         await db.meta.update_one({"id": "seed_v1"}, {"$set": {"id": "seed_v1", "at": now_iso()}}, upsert=True)
+    if not await db.meta.find_one({"id": "seed_v2"}):
+        last = await db.services.find({}, {"order": 1, "_id": 0}).sort("order", -1).limit(1).to_list(1)
+        start = (last[0]["order"] + 1) if last else 0
+        for i, s in enumerate(SERVICES_V2):
+            await db.services.update_one({"slug": s["slug"]}, {"$setOnInsert": {**s, "order": start + i}}, upsert=True)
+        doc = await db.content.find_one({"id": "site"}, {"_id": 0}) or {}
+        sets = {k: v for k, v in ABOUT_V2.items() if not doc.get(k)}
+        if not doc.get("partners") or isinstance(doc["partners"][0], str):
+            sets["partners"] = PARTNERS
+        if sets:
+            await db.content.update_one({"id": "site"}, {"$set": sets})
+        await db.meta.update_one({"id": "seed_v2"}, {"$set": {"id": "seed_v2", "at": now_iso()}}, upsert=True)
 
 
 app.include_router(api_router)
