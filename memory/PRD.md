@@ -48,6 +48,15 @@ The client's full master prompt is in the conversation history. In short: build 
 - About Us: Vision, Mission and six Core Values, all editable in admin.
 - Testing iteration 2 passed. The services intro text and the sitemap were fixed afterwards.
 
+## Implemented (2026-11-21, auth change)
+- Clerk fully removed (backend module, frontend provider, sign-in/sign-up pages, package and env keys).
+- Custom login at /admin/login with email and password only.
+  - Main admin comes from env: ADMIN_EMAIL plus a PBKDF2 hash in ADMIN_PASSWORD_HASH. A password changed in the app is stored in db.meta admin_credentials.
+  - Staff accounts are created by the admin with hashed passwords; roles are admin, staff or disabled.
+- Sessions: HTTP-only, Secure, SameSite=Strict cookie lasting 8h (SESSION_HOURS). Only a hash of the token is stored in db.sessions, with a TTL index. Logout, change password and admin password reset are included.
+- Lockout: 5 failures per IP and email, or 10 per email, within 15 minutes.
+- Testing iterations 3 to 5 passed: backend 50/50 and frontend 100%.
+
 ## Backlog
 - P1: Client to review the content for ICAI and regulatory compliance. Add verified document lists and FAQs per service through the admin.
 - P1: Add the map only once the exact office location is verified.
