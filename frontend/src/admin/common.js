@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useAuth } from "@clerk/react";
+import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 
 export const STATUS = { new: "New", in_progress: "In Progress", completed: "Completed" };
@@ -13,12 +13,16 @@ export const STATUS_CLS = {
 export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "-");
 
 export function useAdminApi() {
-  const { getToken } = useAuth();
+  const navigate = useNavigate();
   return useCallback(async (method, url, data, opts = {}) => {
-    const token = await getToken();
-    const res = await api.request({ method, url, data, headers: { Authorization: `Bearer ${token}` }, ...opts });
-    return res.data;
-  }, [getToken]);
+    try {
+      const res = await api.request({ method, url, data, ...opts });
+      return res.data;
+    } catch (e) {
+      if (e?.response?.status === 401) navigate("/admin/login", { replace: true, state: { expired: true } });
+      throw e;
+    }
+  }, [navigate]);
 }
 
 export const StatusBadge = ({ status }) => (

@@ -13,7 +13,7 @@ import Contact from "@/pages/Contact";
 import Schedule from "@/pages/Schedule";
 import { Privacy, Terms } from "@/pages/Legal";
 import NotFound from "@/pages/NotFound";
-import { ClerkLayout, SignInPage, SignUpPage } from "@/admin/AuthPages";
+import AdminLogin from "@/admin/AdminLogin";
 import AdminGate from "@/admin/AdminShell";
 import Overview from "@/admin/Overview";
 import Enquiries from "@/admin/Enquiries";
@@ -47,16 +47,13 @@ function App() {
             <Route path="/terms-and-conditions" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Route>
-          <Route element={<ClerkLayout />}>
-            <Route path="/sign-in/*" element={<SignInPage />} />
-            <Route path="/sign-up/*" element={<SignUpPage />} />
-            <Route path="/admin" element={<AdminGate />}>
-              <Route index element={<Overview />} />
-              <Route path="enquiries" element={<Enquiries />} />
-              <Route path="services" element={<AdminOnly><ServicesAdmin /></AdminOnly>} />
-              <Route path="content" element={<AdminOnly><ContentAdmin /></AdminOnly>} />
-              <Route path="users" element={<AdminOnly><UsersAdmin /></AdminOnly>} />
-            </Route>
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminGate />}>
+            <Route index element={<Overview />} />
+            <Route path="enquiries" element={<Enquiries />} />
+            <Route path="services" element={<AdminOnly><ServicesAdmin /></AdminOnly>} />
+            <Route path="content" element={<AdminOnly><ContentAdmin /></AdminOnly>} />
+            <Route path="users" element={<AdminOnly><UsersAdmin /></AdminOnly>} />
           </Route>
         </Routes>
         <Toaster position="top-center" richColors />

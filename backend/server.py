@@ -13,7 +13,7 @@ from datetime import datetime, timezone, date
 from pathlib import Path
 from typing import List, Optional, Literal
 
-import requests
+from datetime import timedelta
 from dotenv import load_dotenv
 from fastapi import FastAPI, APIRouter, Query, Depends, HTTPException, Request, Response
 from starlette.middleware.cors import CORSMiddleware
@@ -26,11 +26,11 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 try:
-    from backend.clerk_auth import clerk_router, require_user
+    from backend.auth import hash_password, verify_password, new_token, token_digest
     from backend.notify import notify_new_enquiry
     from backend.seed_data import SERVICES, CONTENT, SERVICES_V2, PARTNERS, ABOUT_V2
 except ModuleNotFoundError:
-    from clerk_auth import clerk_router, require_user
+    from auth import hash_password, verify_password, new_token, token_digest
     from notify import notify_new_enquiry
     from seed_data import SERVICES, CONTENT, SERVICES_V2, PARTNERS, ABOUT_V2
 
@@ -53,7 +53,13 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("slug", ASCENDING)], name="slug", unique=True),
         IndexModel([("order", ASCENDING)], name="order"),
     ],
-    "users": [IndexModel([("user_id", ASCENDING)], name="user_id", unique=True)],
+    "users": [IndexModel([("user_id", ASCENDING)], name="user_id", unique=True),
+              IndexModel([("email", ASCENDING)], name="email")],
+    "sessions": [IndexModel([("token_hash", ASCENDING)], name="token_hash", unique=True),
+                 IndexModel([("expires_at", ASCENDING)], name="expires_ttl", expireAfterSeconds=0),
+                 IndexModel([("user_id", ASCENDING)], name="session_user")],
+    "login_attempts": [IndexModel([("key", ASCENDING)], name="key", unique=True),
+                       IndexModel([("last", ASCENDING)], name="attempts_ttl", expireAfterSeconds=3600)],
 }
 
 
@@ -74,47 +80,51 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-# ---------------- Roles ----------------
-ROLES = ["admin", "staff", "pending"]
-DEFAULT_ROLE = "pending"
-RETIRED_ROLES: dict = {}
-RANK = {r: len(ROLES) - i for i, r in enumerate(ROLES)}
-ENV = "live" if os.environ.get("CLERK_PUBLISHABLE_KEY", "").startswith("pk_live_") else "preview"
-IN_ENV = {"env": {"$in": [ENV, None]}}
+# ---------------- Auth: roles, sessions ----------------
+ROLES = ["admin", "staff", "disabled"]
+RETIRED_ROLES = {"pending": "disabled"}
+ACTIVE_ROLES = ("admin", "staff")
+ADMIN_ID = "admin"
+SESSION_COOKIE = "adroit_session"
+SESSION_TTL = timedelta(hours=int(os.environ["SESSION_HOURS"]))
+LOCK_AFTER, LOCK_WINDOW = 5, timedelta(minutes=15)
 
 
 def effective_role(role) -> str:
     role = RETIRED_ROLES.get(role, role)
-    return role if role in ROLES else DEFAULT_ROLE
+    return role if role in ROLES else "disabled"
 
 
-def _clerk_user(user_id: str) -> dict:
-    r = requests.get(f"https://api.clerk.com/v1/users/{user_id}", timeout=10,
-                     headers={"Authorization": f"Bearer {os.environ['CLERK_SECRET_KEY']}", "User-Agent": "emergent-app"})
-    r.raise_for_status()
-    return r.json()
+def _admin_email() -> str:
+    return os.environ["ADMIN_EMAIL"].strip().lower()
 
 
-async def current_member(user: dict = Depends(require_user)) -> dict:
-    uid = user["user_id"]
-    member = await db.users.find_one({"user_id": uid}, {"_id": 0})
-    if member is None or not member.get("role"):
-        cu = await asyncio.to_thread(_clerk_user, uid)
-        admins = {e.strip().lower() for e in os.environ.get("ADMIN_EMAIL", "").split(",") if e.strip()}
-        emails = cu.get("email_addresses", [])
-        is_admin = any(e["email_address"].lower() in admins and (e.get("verification") or {}).get("status") == "verified" for e in emails)
-        primary = next((e["email_address"] for e in emails if e["id"] == cu.get("primary_email_address_id")),
-                       emails[0]["email_address"] if emails else "")
-        name = " ".join(filter(None, [cu.get("first_name"), cu.get("last_name")])) or primary
-        role = "admin" if is_admin else DEFAULT_ROLE
-        await db.users.update_one({"user_id": uid, "role": {"$in": [None, ""]}}, {"$set": {"role": role}})
-        member = await db.users.find_one_and_update(
-            {"user_id": uid},
-            {"$setOnInsert": {"user_id": uid, "role": role, "created_at": now_iso()}, "$set": {"email": primary, "name": name}},
-            upsert=True, projection={"_id": 0}, return_document=ReturnDocument.AFTER)
-    if member.get("env") != ENV:
-        await db.users.update_one({"user_id": uid}, {"$set": {"env": ENV}})
-    return {**member, "env": ENV, "role": effective_role(member["role"])}
+def _aware(dt: datetime) -> datetime:
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+async def _admin_hash() -> str:
+    doc = await db.meta.find_one({"id": "admin_credentials"}, {"_id": 0})
+    return doc["password_hash"] if doc else os.environ["ADMIN_PASSWORD_HASH"]
+
+
+def _admin_member() -> dict:
+    return {"user_id": ADMIN_ID, "role": "admin", "email": _admin_email(), "name": "Administrator"}
+
+
+async def current_member(request: Request) -> dict:
+    token = request.cookies.get(SESSION_COOKIE)
+    if not token:
+        raise HTTPException(status_code=401, detail="Not signed in")
+    s = await db.sessions.find_one({"token_hash": token_digest(token)}, {"_id": 0})
+    if not s or _aware(s["expires_at"]) <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Your session has expired. Please sign in again.")
+    if s["user_id"] == ADMIN_ID:
+        return _admin_member()
+    u = await db.users.find_one({"user_id": s["user_id"]}, {"_id": 0, "password_hash": 0})
+    if not u or effective_role(u.get("role")) not in ACTIVE_ROLES:
+        raise HTTPException(status_code=401, detail="Not signed in")
+    return {**u, "role": effective_role(u["role"])}
 
 
 def require_role(*roles: str):
@@ -335,9 +345,86 @@ def _scope(member: dict) -> dict:
     return {} if member["role"] == "admin" else {"assigned_to": member["user_id"]}
 
 
-@api_router.get("/me")
+def _public_member(m: dict) -> dict:
+    return {"user_id": m["user_id"], "role": m["role"], "name": m.get("name", ""), "email": m.get("email", "")}
+
+
+class LoginIn(BaseModel):
+    email: str = Field(min_length=3, max_length=200)
+    password: str = Field(min_length=1, max_length=200)
+
+
+def _set_session_cookie(response: Response, token: str) -> None:
+    response.set_cookie(SESSION_COOKIE, token, max_age=int(SESSION_TTL.total_seconds()),
+                        httponly=True, secure=True, samesite="strict", path="/")
+
+
+@api_router.post("/auth/login")
+async def login(body: LoginIn, request: Request, response: Response):
+    email, ip, now = body.email.strip().lower(), _client_ip(request), datetime.now(timezone.utc)
+    key = f"{ip}:{email}"
+    att = await db.login_attempts.find_one({"key": key}, {"_id": 0})
+    recent = att and _aware(att["last"]) > now - LOCK_WINDOW
+    if recent and att["count"] >= LOCK_AFTER:
+        raise HTTPException(status_code=429, detail="Too many failed attempts. Please try again in 15 minutes.")
+    user_id = None
+    if email == _admin_email():
+        if await asyncio.to_thread(verify_password, body.password, await _admin_hash()):
+            user_id = ADMIN_ID
+    else:
+        u = await db.users.find_one({"email": email}, {"_id": 0})
+        if (u and u.get("password_hash") and effective_role(u.get("role")) in ACTIVE_ROLES
+                and await asyncio.to_thread(verify_password, body.password, u["password_hash"])):
+            user_id = u["user_id"]
+    if not user_id:
+        await db.login_attempts.update_one(
+            {"key": key}, {"$set": {"key": key, "last": now, "count": (att["count"] + 1) if recent else 1}}, upsert=True)
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    await db.login_attempts.delete_one({"key": key})
+    token = new_token()
+    await db.sessions.insert_one({"token_hash": token_digest(token), "user_id": user_id, "ip": ip,
+                                  "created_at": now, "expires_at": now + SESSION_TTL})
+    _set_session_cookie(response, token)
+    if user_id == ADMIN_ID:
+        return _admin_member()
+    return _public_member({**u, "role": effective_role(u["role"])})
+
+
+@api_router.post("/auth/logout")
+async def logout(request: Request, response: Response):
+    token = request.cookies.get(SESSION_COOKIE)
+    if token:
+        await db.sessions.delete_one({"token_hash": token_digest(token)})
+    response.delete_cookie(SESSION_COOKIE, path="/", httponly=True, secure=True, samesite="strict")
+    return {"ok": True}
+
+
+@api_router.get("/auth/me")
 async def me(member: dict = Depends(current_member)):
-    return {"user_id": member["user_id"], "role": member["role"], "name": member.get("name", ""), "email": member.get("email", "")}
+    return _public_member(member)
+
+
+class PasswordChangeIn(BaseModel):
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=10, max_length=200)
+
+
+@api_router.post("/auth/change-password")
+async def change_password(body: PasswordChangeIn, request: Request, member: dict = Depends(current_member)):
+    if member["user_id"] == ADMIN_ID:
+        stored = await _admin_hash()
+    else:
+        stored = (await db.users.find_one({"user_id": member["user_id"]}, {"password_hash": 1, "_id": 0}) or {}).get("password_hash", "")
+    if not await asyncio.to_thread(verify_password, body.current_password, stored):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    new_hash = await asyncio.to_thread(hash_password, body.new_password)
+    if member["user_id"] == ADMIN_ID:
+        await db.meta.update_one({"id": "admin_credentials"}, {"$set": {"id": "admin_credentials", "password_hash": new_hash, "at": now_iso()}}, upsert=True)
+    else:
+        await db.users.update_one({"user_id": member["user_id"]}, {"$set": {"password_hash": new_hash}})
+    current = token_digest(request.cookies.get(SESSION_COOKIE, ""))
+    await db.sessions.delete_many({"user_id": member["user_id"], "token_hash": {"$ne": current}})
+    return {"ok": True}
 
 
 @api_router.get("/admin/stats")
@@ -413,7 +500,8 @@ async def update_enquiry(enquiry_id: str, body: EnquiryUpdate, member: dict = De
         if member["role"] != "admin":
             raise HTTPException(status_code=403, detail="Only an admin can assign enquiries")
         if body.assigned_to:
-            target = await db.users.find_one({"user_id": body.assigned_to, "role": {"$in": ["admin", "staff"]}, **IN_ENV}, {"_id": 0})
+            target = _admin_member() if body.assigned_to == ADMIN_ID else await db.users.find_one(
+                {"user_id": body.assigned_to, "role": {"$in": list(ACTIVE_ROLES)}}, {"_id": 0})
             if not target:
                 raise HTTPException(status_code=404, detail="Staff member not found")
             sets.update(assigned_to=target["user_id"], assigned_name=target.get("name") or target.get("email", ""))
@@ -447,8 +535,9 @@ async def add_note(enquiry_id: str, body: NoteIn, member: dict = Depends(require
 
 @api_router.get("/admin/assignees")
 async def assignees(admin: dict = Depends(require_admin)):
-    people = await db.users.find({"role": {"$in": ["admin", "staff"]}, **IN_ENV}, {"_id": 0}).to_list(500)
-    return [{"user_id": p["user_id"], "name": p.get("name") or p.get("email", ""), "role": p["role"]} for p in people]
+    people = await db.users.find({"role": {"$in": list(ACTIVE_ROLES)}}, {"_id": 0, "password_hash": 0}).to_list(500)
+    return [{"user_id": ADMIN_ID, "name": "Administrator", "role": "admin"}] + [
+        {"user_id": p["user_id"], "name": p.get("name") or p.get("email", ""), "role": p["role"]} for p in people]
 
 
 # ---------------- Admin: services ----------------
@@ -546,27 +635,61 @@ async def update_content(body: SiteContent, admin: dict = Depends(require_admin)
 # ---------------- Admin: users ----------------
 @api_router.get("/users")
 async def list_users(admin: dict = Depends(require_admin)):
-    people = await db.users.find(IN_ENV, {"_id": 0}).to_list(1000)
-    return {"roles": [r for r in ROLES if RANK[r] <= RANK[admin["role"]]],
-            "users": [{**p, "role": effective_role(p.get("role"))} for p in people]}
+    people = await db.users.find({}, {"_id": 0}).to_list(1000)
+    users = [{**{k: v for k, v in p.items() if k != "password_hash"}, "role": effective_role(p.get("role")),
+              "has_password": bool(p.get("password_hash"))} for p in people]
+    return {"roles": ROLES, "admin_email": _admin_email(), "users": users}
+
+
+class UserCreateIn(BaseModel):
+    name: str = Field(min_length=2, max_length=100)
+    email: str = Field(max_length=200)
+    password: str = Field(min_length=10, max_length=200)
+    role: Literal["admin", "staff"] = "staff"
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v):
+        v = v.strip().lower()
+        if not EMAIL_RE.match(v):
+            raise ValueError("Please enter a valid email address")
+        return v
+
+
+@api_router.post("/users")
+async def create_user(body: UserCreateIn, admin: dict = Depends(require_admin)):
+    if body.email == _admin_email() or await db.users.find_one({"email": body.email}, {"_id": 1}):
+        raise HTTPException(status_code=409, detail="A user with this email already exists")
+    doc = {"user_id": str(uuid.uuid4()), "name": body.name.strip(), "email": body.email, "role": body.role,
+           "password_hash": await asyncio.to_thread(hash_password, body.password), "created_at": now_iso()}
+    await db.users.insert_one(doc)
+    return {k: v for k, v in doc.items() if k not in ("_id", "password_hash")}
 
 
 class RoleIn(BaseModel):
-    role: str
+    role: Literal["admin", "staff", "disabled"]
 
 
 @api_router.patch("/users/{user_id}/role")
 async def set_role(user_id: str, body: RoleIn, admin: dict = Depends(require_admin)):
-    if body.role not in ROLES or RANK[body.role] > RANK[admin["role"]]:
-        raise HTTPException(status_code=403, detail="Not allowed")
-    target = await db.users.find_one({"user_id": user_id, **IN_ENV}, {"_id": 0})
-    if target is None:
+    if (await db.users.update_one({"user_id": user_id}, {"$set": {"role": body.role}})).matched_count == 0:
         raise HTTPException(status_code=404, detail="Not found")
-    if (effective_role(target.get("role")) == "admin" and body.role != "admin"
-            and await db.users.count_documents({"role": "admin", **IN_ENV}) <= 1):
-        raise HTTPException(status_code=409, detail="Keep at least one admin")
-    await db.users.update_one({"user_id": user_id}, {"$set": {"role": body.role}})
+    if body.role == "disabled":
+        await db.sessions.delete_many({"user_id": user_id})
     return {"user_id": user_id, "role": body.role}
+
+
+class PasswordResetIn(BaseModel):
+    password: str = Field(min_length=10, max_length=200)
+
+
+@api_router.post("/users/{user_id}/password")
+async def reset_password(user_id: str, body: PasswordResetIn, admin: dict = Depends(require_admin)):
+    new_hash = await asyncio.to_thread(hash_password, body.password)
+    if (await db.users.update_one({"user_id": user_id}, {"$set": {"password_hash": new_hash}})).matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    await db.sessions.delete_many({"user_id": user_id})
+    return {"ok": True}
 
 
 # ---------------- Startup ----------------
@@ -595,7 +718,6 @@ async def seed() -> None:
 
 
 app.include_router(api_router)
-app.include_router(clerk_router)
 
 app.add_middleware(
     CORSMiddleware,
