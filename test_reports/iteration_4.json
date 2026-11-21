@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 4 verified the post-iteration-3 fixes. Backend: 50/50 pass (38 in test_custom_auth.py plus 12 new in test_iteration4_lockout.py). The new login_failures lockout works: 5 failures from one IP+email give 429 on the 6th, 10 failures from rotating X-Forwarded-For IPs give 429 for that email, email case is normalised, and a successful login clears only that IP's failures. Regression of admin login, /auth/me, logout and staff 403 on admin-only routes passed. Frontend: a first-time visitor to /admin and a visitor reopening /admin after Log Out both reach /admin/login with no expired message (PASS). A reload after expiry goes to /admin/login with no message, which the brief allows. All 5 admin pages load. One bug: when the session expires and the user clicks a sidebar link (e.g. Enquiries), they are redirected to /admin/login WITHOUT the 'Your session has expired' message. The message only shows when a 401 comes back while the user stays on a page (e.g. typing in the Enquiries search box).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login", "issue": "Per-email lock (10 in 15 min from any IP) lets an attacker lock the real admin out on purpose. This is a known trade-off and acceptable, but there is no admin unlock path other than editing the DB."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "AdminShell.jsx useEffect([navigate])", "issue": "The expired message is lost when an expired session is detected through sidebar navigation. RCA: in react-router-dom 7.18.4 declarative mode, the function returned by useNavigate() changes on every pathname change. AdminShell's effect therefore re-runs GET /auth/me on every admin navigation (seen in the network log: /auth/me is called after each NAV). On expiry, that /auth/me 401 arrives first (the Enquiries call is debounced by 250ms and the page unmounts), and Shell redirects with navigate('/admin/login', {replace:true}) with no {expired:true}. Repro: log in, set the session's expires_at to the past, click admin-nav-enquiries, and the login page shows no admin-login-error. Fix options: (a) run the /auth/me effect once (store navigate in a ref, deps []) so in-page useAdminApi calls handle the 401, or (b) in Shell's catch, pass state:{expired:true} when member was already loaded (a functional setMember / ref check) so first-time visitors still get no message.", "selector": "[data-testid='admin-nav-enquiries'] -> [data-testid='admin-login-error']", "priority": "MEDIUM"},
+      {"component": "Enquiries/other pages + useAdminApi", "issue": "On an in-page 401, the user sees the inline expired message AND a sonner toast with the same text, because each page's .catch(toast.error(errMsg(e))) also fires. Suppress the toast for 401 (e.g. useAdminApi rethrows a marked error, or pages skip the toast when status===401).", "selector": "sonner toast + [data-testid='admin-login-error']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_iteration4_lockout.py", "/app/backend/tests/test_custom_auth.py", "/app/backend/tests/conftest.py", "/app/test_reports/pytest/pytest_results_it4.xml"],
+  "action_items": [
+    "Keep the 'session expired' message when expiry is found through sidebar navigation. Either run AdminShell's /auth/me check only once on mount (navigate in a ref, deps []), or pass state {expired:true} when a re-check returns 401 after member was already loaded.",
+    "Optional: also consider that AdminShell re-fetching /auth/me on every nav (and useAdminApi's `call` identity changing per nav, which re-triggers page loads) is extra network traffic.",
+    "Optional: suppress the duplicate toast on 401 in admin pages."
+  ],
+  "critical_code_review_comments": [
+    "AdminShell.jsx: useEffect deps [navigate] are not stable in react-router v7 declarative mode, so the effect re-runs on every route change. This is the root cause of the lost expired message.",
+    "common.js useAdminApi: useCallback([navigate]) also changes identity on every nav. Pages whose load callbacks depend on `call` refetch for that reason.",
+    "server.py login: the two count_documents calls and the insert are not atomic, so a burst of parallel requests can go slightly over 5/10. Low risk and acceptable; the TTL index (1h) on login_failures.at keeps the collection small.",
+    "Previous test suite issue (fixed in tests): test_custom_auth.py wrote failed logins for the REAL admin email (test_wrong_password, test_lockout_429) and cleaned the obsolete login_attempts collection. With the new per-email lock of 10, running the suite a few times within 15 min could lock out the real admin."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration4_lockout.py (new)",
+    "/app/backend/tests/test_custom_auth.py (lockout test now uses a TEST_ email and cleans login_failures; wrong-password/unknown-email tests delete their own failure docs by IP)",
+    "/app/backend/tests/conftest.py (session cleanup also deletes login_failures for created TEST_ users' emails)"
+  ],
+  "success_rate": {"backend": "100% (50/50)", "frontend": "83% (5/6 checks; expired message after nav-triggered 401 fails)"},
+  "seed_data_creation": "None. Temporary TEST_ staff users (incl. TEST_ui_expiry) and their sessions and login_failures were deleted. Leftover login_failures docs for nobody@example.com (IPs 10.9.9.x, created before this run by another agent) were left alone; the 1h TTL removes them.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "To test UI expiry without pymongo in the browser env: create a TEST_ staff user via API, run a background python watcher that sets expires_at to the past for that user's sessions about 5s after created_at, log in as that staff user in Playwright, wait 8s, then click admin-nav-enquiries (nav path, currently FAILS) or type in admin-enquiry-search-input (in-page path, PASSES). Run pytest with the configured xdist (do not pass -p no:xdist). Never use the admin email for lockout tests.",
+  "rca of the issue": "The expired message is missing after a nav-triggered 401 because react-router 7's useNavigate identity changes per pathname. AdminShell's useEffect([navigate]) then re-calls /auth/me on each navigation, and its 401 branch redirects without state.expired. That beats the page's own useAdminApi call, which would have set expired:true. Reproduced 2/2 in the browser; the in-page 401 path works (message shown)."
+}

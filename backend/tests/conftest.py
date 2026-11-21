@@ -49,4 +49,6 @@ def cleanup():
         d.enquiries.delete_many({"reference": {"$in": CREATED_REFS}, "full_name": {"$regex": "^TEST_"}})
     if CREATED_USER_IDS:
         d.sessions.delete_many({"user_id": {"$in": CREATED_USER_IDS}})
+        emails = [u["email"] for u in d.users.find({"user_id": {"$in": CREATED_USER_IDS}}, {"email": 1, "_id": 0})]
+        d.login_failures.delete_many({"email": {"$in": emails}})
         d.users.delete_many({"user_id": {"$in": CREATED_USER_IDS}, "name": {"$regex": "^TEST_"}})

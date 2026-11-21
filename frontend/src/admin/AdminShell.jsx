@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Inbox, Layers, FileText, UserCog, Loader2, ExternalLink, LogOut, KeyRound } from "lucide-react";
 import { ChangePasswordDialog } from "@/admin/ChangePassword";
@@ -18,9 +18,11 @@ function Shell() {
   const [error, setError] = useState("");
   const [pwOpen, setPwOpen] = useState(false);
 
+  const loaded = useRef(false);
+
   useEffect(() => {
-    api.get("/auth/me").then((r) => setMember(r.data)).catch((e) => {
-      if (e?.response?.status === 401) navigate("/admin/login", { replace: true });
+    api.get("/auth/me").then((r) => { loaded.current = true; setMember(r.data); }).catch((e) => {
+      if (e?.response?.status === 401) navigate("/admin/login", { replace: true, state: loaded.current ? { expired: true } : undefined });
       else setError(errMsg(e));
     });
   }, [navigate]);

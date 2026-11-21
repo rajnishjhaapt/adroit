@@ -48,11 +48,16 @@ class TestClerkGone:
 # --- Login / cookie / me / logout ---
 class TestLogin:
     def test_wrong_password(self):
-        _, r = login(ADMIN_EMAIL, "wrong-password")
+        h = fwd()
+        r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": "wrong-password"}, headers=h)
+        # remove this run's failure so repeated runs never accumulate toward the admin's per-email lock
+        db().login_failures.delete_many({"email": ADMIN_EMAIL, "ip": h["X-Forwarded-For"]})
         assert r.status_code == 401 and r.json()["detail"] == "Invalid email or password"
 
     def test_unknown_email(self):
-        _, r = login("nobody_test@example.com", "whatever12345")
+        h = fwd()
+        r = requests.post(f"{API}/auth/login", json={"email": "nobody_test@example.com", "password": "whatever12345"}, headers=h)
+        db().login_failures.delete_many({"email": "nobody_test@example.com", "ip": h["X-Forwarded-For"]})
         assert r.status_code == 401
 
     def test_login_cookie_flags_and_me(self):
@@ -100,13 +105,16 @@ class TestLogin:
         d.sessions.delete_one({"token_hash": sha(tok)})
 
     def test_lockout_429(self):
-        h = fwd()
-        for i in range(5):
-            r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": f"bad{i}"}, headers=h)
-            assert r.status_code == 401, (i, r.status_code)
-        r = requests.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, headers=h)
-        assert r.status_code == 429
-        db().login_attempts.delete_one({"key": f"{h['X-Forwarded-For']}:{ADMIN_EMAIL}"})
+        # Uses a TEST_ email (never the real admin) so the per-email lock cannot lock out the admin
+        h, email = fwd(), f"test_lock_{uuid.uuid4().hex[:6]}@example.com"
+        try:
+            for i in range(5):
+                r = requests.post(f"{API}/auth/login", json={"email": email, "password": f"bad{i}"}, headers=h)
+                assert r.status_code == 401, (i, r.status_code)
+            r = requests.post(f"{API}/auth/login", json={"email": email, "password": "bad-again"}, headers=h)
+            assert r.status_code == 429
+        finally:
+            db().login_failures.delete_many({"email": email})
 
 
 # --- Unauthorized access ---

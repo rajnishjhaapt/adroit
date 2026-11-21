@@ -19,7 +19,10 @@ export function useAdminApi() {
       const res = await api.request({ method, url, data, ...opts });
       return res.data;
     } catch (e) {
-      if (e?.response?.status === 401) navigate("/admin/login", { replace: true, state: { expired: true } });
+      if (e?.response?.status === 401) {
+        navigate("/admin/login", { replace: true, state: { expired: true } });
+        return new Promise(() => {});
+      }
       throw e;
     }
   }, [navigate]);
