@@ -125,6 +125,7 @@ CONTENT = {
     "tagline": "Your Trusted Partner in Audit, Taxation & Business Advisory",
     "experience": "18+",
     "address": "B-92, Sector-63, Noida – 201301, India",
+    "address_2": "Ofc. No. 103, H36, Sector 63, Near Electronic City Metro, Noida, 201301",
     "phone": "+91 99993 15177",
     "phone_link": "+919999315177",
     "whatsapp_number": "919999315177",

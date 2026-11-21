@@ -24,4 +24,6 @@ export function SiteProvider({ children }) {
 
 export const useSite = () => useContext(SiteCtx);
 
+export const addresses = (content) => [content.address, content.address_2].filter(Boolean);
+
 export const experienceLabel = (content) => `${content.experience} Years of Experience`;

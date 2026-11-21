@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, MessageCircle, CalendarCheck, Building } from "lucide-react";
-import { useSite } from "@/lib/site";
+import { useSite, addresses } from "@/lib/site";
 import { waLink } from "@/lib/api";
 import { Seo } from "@/components/site/Seo";
 import { PageHero } from "@/components/site/Blocks";
@@ -28,7 +28,9 @@ export default function Contact() {
             <h2 className="text-3xl font-semibold text-white">Contact details</h2>
             <div className="mt-6">
               <Row icon={Building} label="Company" testId="contact-company">{c.company_name}</Row>
-              <Row icon={MapPin} label="Address" testId="contact-address">{c.address}</Row>
+              <Row icon={MapPin} label={c.address_2 ? "Office Addresses" : "Address"} testId="contact-address">
+                {addresses(c).map((a, i) => <p key={i} className="[&+p]:mt-3" data-testid={`contact-address-${i}`}>{a}</p>)}
+              </Row>
               <Row icon={Phone} label="Phone" testId="contact-phone"><a href={`tel:${c.phone_link}`} className="hover:text-gold">{c.phone}</a></Row>
               <Row icon={MessageCircle} label="WhatsApp" testId="contact-whatsapp">
                 <a href={waLink(c.whatsapp_number)} target="_blank" rel="noopener noreferrer" className="break-all hover:text-gold">{waLink(c.whatsapp_number)}</a>

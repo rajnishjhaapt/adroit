@@ -49,6 +49,7 @@ export default function ContentAdmin() {
         <L label="Experience (shown as “X Years of Experience”)">{inp("experience")}</L>
         <L label="Tagline" full>{inp("tagline")}</L>
         <L label="Address" full>{inp("address")}</L>
+        <L label="Second office address (leave empty to hide)" full>{inp("address_2")}</L>
         <L label="Phone (display)">{inp("phone")}</L>
         <L label="Phone (for call link, digits with +)">{inp("phone_link")}</L>
         <L label="WhatsApp number (digits only, with country code)">{inp("whatsapp_number")}</L>

@@ -145,6 +145,7 @@ class SiteContent(BaseModel):
     tagline: str = Field(max_length=200)
     experience: str = Field(min_length=1, max_length=10)
     address: str = Field(max_length=300)
+    address_2: str = Field(default="", max_length=300)
     phone: str = Field(max_length=30)
     phone_link: str = Field(pattern=r"^\+?\d{8,15}$")
     whatsapp_number: str = Field(pattern=r"^\d{8,15}$")

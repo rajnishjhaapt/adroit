@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import { Phone, MessageCircle } from "lucide-react";
-import { useSite } from "@/lib/site";
+import { useSite, addresses } from "@/lib/site";
 import { waLink } from "@/lib/api";
 import { Seo } from "@/components/site/Seo";
 import { PageHero } from "@/components/site/Blocks";
@@ -32,8 +32,8 @@ export default function Schedule() {
               </div>
             </div>
             <div className="border border-slate-200 bg-white p-8 text-sm text-slatey">
-              <p className="font-semibold text-navy">Office</p>
-              <p className="mt-2">{c.address}</p>
+              <p className="font-semibold text-navy">{c.address_2 ? "Offices" : "Office"}</p>
+              {addresses(c).map((a, i) => <p key={i} className="mt-2">{a}</p>)}
             </div>
           </aside>
         </div>

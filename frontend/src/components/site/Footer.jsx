@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, MessageCircle } from "lucide-react";
-import { useSite, experienceLabel } from "@/lib/site";
+import { useSite, experienceLabel, addresses } from "@/lib/site";
 import { waLink } from "@/lib/api";
 import { Logo } from "@/components/site/Logo";
 import { NAV } from "@/components/site/Header";
@@ -34,7 +34,9 @@ export const Footer = () => {
         <div className="lg:col-span-3">
           <ColTitle>Contact</ColTitle>
           <ul className="space-y-4 text-sm text-white/70">
-            <li className="flex gap-3"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold" /><span data-testid="footer-address">{c.address}</span></li>
+            {addresses(c).map((a, i) => (
+              <li key={i} className="flex gap-3"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold" /><span data-testid={`footer-address-${i}`}>{a}</span></li>
+            ))}
             <li><a href={`tel:${c.phone_link}`} className="flex gap-3 hover:text-gold" data-testid="footer-phone"><Phone className="h-4 w-4 text-gold" />{c.phone}</a></li>
             <li><a href={waLink(c.whatsapp_number)} target="_blank" rel="noopener noreferrer" className="flex gap-3 hover:text-gold" data-testid="footer-whatsapp"><MessageCircle className="h-4 w-4 text-gold" />WhatsApp: {c.phone}</a></li>
           </ul>

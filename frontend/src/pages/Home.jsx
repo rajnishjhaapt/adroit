@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, MapPin, Phone, MessageCircle, CheckCircle2 } from "lucide-react";
-import { useSite, experienceLabel } from "@/lib/site";
+import { useSite, experienceLabel, addresses } from "@/lib/site";
 import { waLink } from "@/lib/api";
 import { Seo } from "@/components/site/Seo";
 import { ServiceIcon } from "@/components/site/ServiceIcon";
@@ -109,8 +109,8 @@ export const ContactStrip = ({ c }) => (
     <div className="container-x grid gap-6 md:grid-cols-3">
       <div className="border border-slate-200 bg-white p-8">
         <MapPin className="h-6 w-6 text-gold" strokeWidth={1.5} />
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-slatey">Office Address</p>
-        <p className="mt-2 text-navy" data-testid="home-contact-address">{c.address}</p>
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-slatey">{c.address_2 ? "Office Addresses" : "Office Address"}</p>
+        {addresses(c).map((a, i) => <p key={i} className="mt-2 text-navy" data-testid={`home-contact-address-${i}`}>{a}</p>)}
       </div>
       <a href={`tel:${c.phone_link}`} className="card-lift border border-slate-200 bg-white p-8" data-testid="home-contact-call">
         <Phone className="h-6 w-6 text-gold" strokeWidth={1.5} />
