@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, MapPin, Phone, MessageCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useSite } from "@/lib/site";
+import { useSite, addresses } from "@/lib/site";
 import { waLink } from "@/lib/api";
 import { Logo } from "@/components/site/Logo";
 
@@ -16,7 +16,7 @@ const linkCls = ({ isActive }) =>
 const TopBar = ({ c }) => (
   <div className="hidden bg-navy-dark text-xs text-white/70 md:block">
     <div className="container-x flex items-center justify-between py-2">
-      <span className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-gold" />{c.address}</span>
+      <span className="flex min-w-0 items-center gap-2"><MapPin className="h-3.5 w-3.5 shrink-0 text-gold" /><span className="truncate" data-testid="topbar-address">{addresses(c).join(" & ")}</span></span>
       <div className="flex items-center gap-6">
         <a href={`tel:${c.phone_link}`} className="flex items-center gap-2 hover:text-gold" data-testid="topbar-call-link">
           <Phone className="h-3.5 w-3.5 text-gold" />{c.phone}

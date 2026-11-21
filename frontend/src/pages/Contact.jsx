@@ -20,7 +20,7 @@ export default function Contact() {
   const { content: c } = useSite();
   return (
     <>
-      <Seo title="Contact Us" description={`Contact ${c.company_name} at ${c.address}. Call or WhatsApp ${c.phone}.`} />
+      <Seo title="Contact Us" description={`Contact ${c.company_name} at ${addresses(c).join(" & ")}. Call or WhatsApp ${c.phone}.`} />
       <PageHero eyebrow="Contact Us" title="Get in touch with our team" text="Call, WhatsApp or send us an enquiry. We will get back to you on the details you share." testId="contact-hero" />
       <section className="bg-white py-20 md:py-28">
         <div className="container-x grid gap-12 lg:grid-cols-12">
@@ -29,7 +29,7 @@ export default function Contact() {
             <div className="mt-6">
               <Row icon={Building} label="Company" testId="contact-company">{c.company_name}</Row>
               <Row icon={MapPin} label={c.address_2 ? "Office Addresses" : "Address"} testId="contact-address">
-                {addresses(c).map((a, i) => <p key={i} className="[&+p]:mt-3" data-testid={`contact-address-${i}`}>{a}</p>)}
+                {addresses(c).map((a, i) => <div key={i}>{i > 0 && <p className="my-2 font-serif text-xl text-gold" data-testid="contact-address-ampersand">&amp;</p>}<p data-testid={`contact-address-${i}`}>{a}</p></div>)}
               </Row>
               <Row icon={Phone} label="Phone" testId="contact-phone"><a href={`tel:${c.phone_link}`} className="hover:text-gold">{c.phone}</a></Row>
               <Row icon={MessageCircle} label="WhatsApp" testId="contact-whatsapp">

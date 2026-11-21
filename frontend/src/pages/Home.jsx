@@ -110,7 +110,7 @@ export const ContactStrip = ({ c }) => (
       <div className="border border-slate-200 bg-white p-8">
         <MapPin className="h-6 w-6 text-gold" strokeWidth={1.5} />
         <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-slatey">{c.address_2 ? "Office Addresses" : "Office Address"}</p>
-        {addresses(c).map((a, i) => <p key={i} className="mt-2 text-navy" data-testid={`home-contact-address-${i}`}>{a}</p>)}
+        {addresses(c).map((a, i) => <div key={i}>{i > 0 && <p className="my-1 font-serif text-lg text-gold-hover" data-testid="home-address-ampersand">&amp;</p>}<p className={`text-navy ${i ? "" : "mt-2"}`} data-testid={`home-contact-address-${i}`}>{a}</p></div>)}
       </div>
       <a href={`tel:${c.phone_link}`} className="card-lift border border-slate-200 bg-white p-8" data-testid="home-contact-call">
         <Phone className="h-6 w-6 text-gold" strokeWidth={1.5} />

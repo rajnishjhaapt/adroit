@@ -1,4 +1,4 @@
-import { useSite } from "@/lib/site";
+import { useSite, addresses } from "@/lib/site";
 import { Seo } from "@/components/site/Seo";
 import { PageHero } from "@/components/site/Blocks";
 
@@ -40,7 +40,7 @@ export function Privacy() {
         <p>If you contact us through WhatsApp or by phone, your communication is also subject to the policies of the respective service provider.</p>
       </Section>
       <Section title="Contact">
-        <p>For any privacy-related request, including access or deletion of your details, contact us at {c.phone} or visit us at {c.address}.</p>
+        <p>For any privacy-related request, including access or deletion of your details, contact us at {c.phone} or visit us at {addresses(c).join(" & ")}.</p>
       </Section>
     </Wrap>
   );

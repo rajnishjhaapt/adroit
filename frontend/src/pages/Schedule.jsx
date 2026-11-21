@@ -33,7 +33,7 @@ export default function Schedule() {
             </div>
             <div className="border border-slate-200 bg-white p-8 text-sm text-slatey">
               <p className="font-semibold text-navy">{c.address_2 ? "Offices" : "Office"}</p>
-              {addresses(c).map((a, i) => <p key={i} className="mt-2">{a}</p>)}
+              {addresses(c).map((a, i) => <div key={i}>{i > 0 && <p className="my-1 font-serif text-lg text-gold-hover">&amp;</p>}<p className={i ? "" : "mt-2"}>{a}</p></div>)}
             </div>
           </aside>
         </div>
