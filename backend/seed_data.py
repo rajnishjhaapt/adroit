@@ -165,7 +165,7 @@ PARTNERS = [
      "quote": "Great leadership is not about being ahead of others; it is about bringing out the best in everyone.",
      "bio": ["I believe that every challenge brings an opportunity to learn, grow and create something meaningful. With a focus on strategic thinking, professional excellence and teamwork, my aim is to help businesses move forward with confidence.",
              "My philosophy is simple: Lead with purpose, work with passion and build success on a foundation of trust and commitment."]},
-    {"slug": "ajay-kumar", "name": "Ajay Kumar", "designation": PARTNER_DESIGNATION, "photo_url": "",
+    {"slug": "ajay-kumar", "name": "Ajay Kumar", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/ajay-kumar.jpg",
      "quote": "True success is achieved when knowledge meets dedication and every effort creates lasting value.",
      "bio": ["I believe that consistency, integrity and a commitment to excellence are the pillars of long-term success. My approach is to understand challenges, find practical solutions and build meaningful professional relationships through transparency and dedication.",
              "My philosophy is simple: Stay committed, keep improving and let the quality of your work speak for itself."]},
