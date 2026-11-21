@@ -157,7 +157,7 @@ CONTENT = {
 PARTNER_DESIGNATION = "Partner – Adroit Management and Tax Consultants"
 
 PARTNERS = [
-    {"slug": "awdhesh-jha", "name": "Awdhesh Jha", "designation": PARTNER_DESIGNATION, "photo_url": "",
+    {"slug": "awdhesh-jha", "name": "Awdhesh Jha", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/awdhesh-jha.jpg",
      "quote": "Success is not just about building a business; it’s about building trust, creating value and making a lasting impact.",
      "bio": ["With a vision of excellence and a commitment to integrity, I believe in turning challenges into opportunities and building long-term relationships through knowledge, dedication and professional ethics.",
              "My philosophy is simple: Never compromise on integrity, never stop learning, and always strive to deliver more than expected."]},
