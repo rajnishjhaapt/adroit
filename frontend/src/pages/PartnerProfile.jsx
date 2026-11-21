@@ -31,14 +31,25 @@ export default function PartnerProfile() {
         </div>
       </section>
       <section className="bg-white py-20 md:py-28">
-        <div className="container-x grid gap-16 lg:grid-cols-12">
-          <blockquote className="border-l-2 border-gold pl-8 lg:col-span-5" data-testid="partner-profile-quote">
+        <div className="container-x grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          {p.portrait_url && (
+            <figure className="relative animate-fade-up lg:col-span-5" data-testid="partner-profile-portrait">
+              <div className="relative">
+                <div className="absolute -left-3 -top-3 h-full w-full border border-gold/60" aria-hidden="true" />
+                <img src={p.portrait_url} alt={`${p.name}, ${p.designation}`} loading="lazy" className="relative aspect-[4/5] w-full bg-mist object-cover object-top shadow-[0_30px_60px_-30px_rgba(16,36,58,0.5)]" />
+              </div>
+              <figcaption className="relative mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-slatey">{p.name}</figcaption>
+            </figure>
+          )}
+          <div className={`grid gap-12 ${p.portrait_url ? "lg:col-span-7" : "lg:col-span-12 lg:grid-cols-12 lg:gap-16"}`}>
+          <blockquote className={`border-l-2 border-gold pl-8 ${p.portrait_url ? "" : "lg:col-span-5"}`} data-testid="partner-profile-quote">
             <Quote className="h-8 w-8 text-gold" />
             <p className="mt-6 font-serif text-2xl italic md:text-3xl leading-snug text-navy">“{p.quote.replace(/^[“"]|[”"]$/g, "")}”</p>
           </blockquote>
-          <div className="space-y-6 text-base leading-relaxed text-ink md:text-lg lg:col-span-7" data-testid="partner-profile-bio">
+          <div className={`space-y-6 text-base leading-relaxed text-ink md:text-lg ${p.portrait_url ? "" : "lg:col-span-7"}`} data-testid="partner-profile-bio">
             {p.bio.map((para, i) => <p key={i}>{para}</p>)}
             <Link to="/team" className="btn-outline-navy mt-4" data-testid="back-to-team-bottom"><ArrowLeft className="h-4 w-4" />Back to Our Team</Link>
+          </div>
           </div>
         </div>
       </section>

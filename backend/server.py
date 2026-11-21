@@ -147,8 +147,9 @@ class Partner(BaseModel):
     quote: str = Field(default="", max_length=500)
     bio: List[str] = []
     photo_url: str = Field(default="", max_length=500)
+    portrait_url: str = Field(default="", max_length=500)
 
-    @field_validator("photo_url")
+    @field_validator("photo_url", "portrait_url")
     @classmethod
     def https_only(cls, v):
         v = (v or "").strip()

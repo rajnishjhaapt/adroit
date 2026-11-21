@@ -104,10 +104,11 @@ export default function ContentAdmin() {
               <textarea className="field sm:col-span-2" rows={2} placeholder="Quote" value={x.quote} onChange={(e) => upd("partners", i, "quote", e.target.value)} data-testid={`content-partner-quote-${i}`} />
               <textarea className="field sm:col-span-2" rows={5} placeholder="Profile description (separate paragraphs with a blank line)" value={x.bio} onChange={(e) => upd("partners", i, "bio", e.target.value)} />
               <input className="field" placeholder="Photo URL (https://…) – leave empty to show initials" value={x.photo_url} onChange={(e) => upd("partners", i, "photo_url", e.target.value)} data-testid={`content-partner-photo-${i}`} />
+              <input className="field" placeholder="Full-size portrait URL for profile page (optional)" value={x.portrait_url || ""} onChange={(e) => upd("partners", i, "portrait_url", e.target.value)} data-testid={`content-partner-portrait-${i}`} />
               <button className="justify-self-end p-2 text-red-700" onClick={() => setF((p) => ({ ...p, partners: p.partners.filter((_, j) => j !== i) }))} aria-label="Remove partner"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
-          <button className="btn-outline-navy px-3 py-2" onClick={() => setF((p) => ({ ...p, partners: [...p.partners, { slug: "", name: "", designation: "Partner – Adroit Management and Tax Consultants", quote: "", bio: "", photo_url: "" }] }))} data-testid="content-add-partner"><Plus className="h-4 w-4" />Add partner</button>
+          <button className="btn-outline-navy px-3 py-2" onClick={() => setF((p) => ({ ...p, partners: [...p.partners, { slug: "", name: "", designation: "Partner – Adroit Management and Tax Consultants", quote: "", bio: "", photo_url: "", portrait_url: "" }] }))} data-testid="content-add-partner"><Plus className="h-4 w-4" />Add partner</button>
         </div>
         <div className="space-y-3 sm:col-span-2">
           <p className="text-xs font-medium uppercase tracking-wider text-navy">Associated CA Firms</p>

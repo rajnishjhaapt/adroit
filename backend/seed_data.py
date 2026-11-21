@@ -157,15 +157,15 @@ CONTENT = {
 PARTNER_DESIGNATION = "Partner – Adroit Management and Tax Consultants"
 
 PARTNERS = [
-    {"slug": "awdhesh-jha", "name": "Awdhesh Jha", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/awdhesh-jha.jpg",
+    {"slug": "awdhesh-jha", "name": "Awdhesh Jha", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/awdhesh-jha.jpg", "portrait_url": "/images/partners/awdhesh-jha-portrait.jpg",
      "quote": "Success is not just about building a business; it’s about building trust, creating value and making a lasting impact.",
      "bio": ["With a vision of excellence and a commitment to integrity, I believe in turning challenges into opportunities and building long-term relationships through knowledge, dedication and professional ethics.",
              "My philosophy is simple: Never compromise on integrity, never stop learning, and always strive to deliver more than expected."]},
-    {"slug": "arun-rana", "name": "Arun Rana", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/arun-rana.jpg",
+    {"slug": "arun-rana", "name": "Arun Rana", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/arun-rana.jpg", "portrait_url": "/images/partners/arun-rana-portrait.jpg",
      "quote": "Great leadership is not about being ahead of others; it is about bringing out the best in everyone.",
      "bio": ["I believe that every challenge brings an opportunity to learn, grow and create something meaningful. With a focus on strategic thinking, professional excellence and teamwork, my aim is to help businesses move forward with confidence.",
              "My philosophy is simple: Lead with purpose, work with passion and build success on a foundation of trust and commitment."]},
-    {"slug": "ajay-kumar", "name": "Ajay Kumar", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/ajay-kumar.jpg",
+    {"slug": "ajay-kumar", "name": "Ajay Kumar", "designation": PARTNER_DESIGNATION, "photo_url": "/images/partners/ajay-kumar.jpg", "portrait_url": "/images/partners/ajay-kumar-portrait.jpg",
      "quote": "True success is achieved when knowledge meets dedication and every effort creates lasting value.",
      "bio": ["I believe that consistency, integrity and a commitment to excellence are the pillars of long-term success. My approach is to understand challenges, find practical solutions and build meaningful professional relationships through transparency and dedication.",
              "My philosophy is simple: Stay committed, keep improving and let the quality of your work speak for itself."]},
