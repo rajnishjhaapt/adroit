@@ -57,6 +57,23 @@ The client's full master prompt is in the conversation history. In short: build 
 - Lockout: 5 failures per IP and email, or 10 per email, within 15 minutes.
 - Testing iterations 3 to 5 passed: backend 50/50 and frontend 100%.
 
+## Implemented (2026-11-21, self-hosting prep)
+- Enquiry rate limit moved from memory to MongoDB (enquiry_hits with a TTL index). No in-memory state is left, so multiple Uvicorn workers are safe.
+- CORS_ORIGINS is now required from env. Email alerts are optional: they're skipped when EMERGENT_EMAIL_KEY is empty.
+- Added /app/deploy:
+  - DEPLOYMENT.md (Hostinger Ubuntu guide, MongoDB 7 with auth, backups and restore)
+  - nginx/adroit.conf
+  - adroit-backend.service (systemd unit for Uvicorn)
+  - backend.env.example and frontend.env.production.example
+  - scripts/backup_mongo.sh
+- Added backend/scripts/make_admin_hash.py.
+- Simulated production locally with a separate test database (Uvicorn, 2 workers, production-style env):
+  - the empty database seeded 12 services
+  - the rate limit returned 429 on the 6th submission
+  - data persisted across a restart, admin login worked, and admin stats without login returned 401
+- A production yarn build succeeded.
+- Not yet done: an actual deployment to Hostinger. It needs the user's VPS and domain.
+
 ## Backlog
 - P1: Client to review the content for ICAI and regulatory compliance. Add verified document lists and FAQs per service through the admin.
 - P1: Add the map only once the exact office location is verified.

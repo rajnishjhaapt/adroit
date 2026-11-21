@@ -7,7 +7,7 @@ import secrets
 import logging
 import time
 import uuid
-from collections import defaultdict, deque
+from collections import defaultdict
 from contextlib import suppress
 from datetime import datetime, timezone, date
 from pathlib import Path
@@ -58,6 +58,8 @@ INDEXES: dict[str, list[IndexModel]] = {
     "sessions": [IndexModel([("token_hash", ASCENDING)], name="token_hash", unique=True),
                  IndexModel([("expires_at", ASCENDING)], name="expires_ttl", expireAfterSeconds=0),
                  IndexModel([("user_id", ASCENDING)], name="session_user")],
+    "enquiry_hits": [IndexModel([("ip", ASCENDING), ("at", DESCENDING)], name="ip_at"),
+                     IndexModel([("at", ASCENDING)], name="hits_ttl", expireAfterSeconds=900)],
     "login_failures": [IndexModel([("email", ASCENDING), ("at", DESCENDING)], name="email_at"),
                        IndexModel([("at", ASCENDING)], name="failures_ttl", expireAfterSeconds=3600)],
 }
@@ -225,19 +227,16 @@ async def sitemap(request: Request):
 
 
 # ---------------- Public: enquiries ----------------
-_RATE: dict = defaultdict(deque)
-RATE_LIMIT, RATE_WINDOW = 5, 600
+RATE_LIMIT, RATE_WINDOW = 5, timedelta(minutes=10)
 MOBILE_RE = re.compile(r"^[6-9]\d{9}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def _rate_check(ip: str) -> None:
-    q, t = _RATE[ip], time.monotonic()
-    while q and t - q[0] > RATE_WINDOW:
-        q.popleft()
-    if len(q) >= RATE_LIMIT:
+async def _rate_check(ip: str) -> None:
+    now = datetime.now(timezone.utc)
+    if await db.enquiry_hits.count_documents({"ip": ip, "at": {"$gt": now - RATE_WINDOW}}) >= RATE_LIMIT:
         raise HTTPException(status_code=429, detail="Too many submissions. Please try again after some time or contact us on WhatsApp.")
-    q.append(t)
+    await db.enquiry_hits.insert_one({"ip": ip, "at": now})
 
 
 class EnquiryIn(BaseModel):
@@ -308,7 +307,7 @@ async def create_enquiry(body: EnquiryIn, request: Request):
             raise HTTPException(status_code=422, detail="Please select a preferred time")
     elif len(body.message) < 5:
         raise HTTPException(status_code=422, detail="Please enter a message")
-    _rate_check(_client_ip(request))
+    await _rate_check(_client_ip(request))
 
     ts = datetime.now(timezone.utc)
     recent = await db.enquiries.find_one(
@@ -720,7 +719,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=os.environ['CORS_ORIGINS'].split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )

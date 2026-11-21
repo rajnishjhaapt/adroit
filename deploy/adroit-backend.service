@@ -1,0 +1,18 @@
+[Unit]
+Description=Adroit FastAPI backend (Uvicorn)
+After=network.target mongod.service
+Wants=mongod.service
+
+[Service]
+User=adroit
+Group=adroit
+WorkingDirectory=/opt/adroit/backend
+ExecStart=/opt/adroit/backend/venv/bin/uvicorn server:app --host 127.0.0.1 --port 8001 --workers 2 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

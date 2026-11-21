@@ -11,7 +11,7 @@ from fastapi import HTTPException
 logger = logging.getLogger(__name__)
 
 EMAIL_BASE_URL = "https://integrations.emergentagent.com"
-EMAIL_KEY = os.environ["EMERGENT_EMAIL_KEY"]
+EMAIL_KEY = os.environ.get("EMERGENT_EMAIL_KEY", "")
 EMAIL_FROM_NAME = os.environ["EMAIL_FROM_NAME"]
 EMAIL_REPLY_TO = os.environ.get("EMAIL_REPLY_TO")
 
@@ -119,7 +119,7 @@ KIND_LABEL = {"contact": "Contact enquiry", "booking": "Consultation booking", "
 async def notify_new_enquiry(enq: dict) -> None:
     """Email the configured company inbox about a new enquiry; no-op if not configured."""
     to = os.environ.get("NOTIFY_EMAIL", "").strip()
-    if not to:
+    if not to or not EMAIL_KEY:
         return
     rows = [
         ("Reference", enq["reference"]), ("Type", KIND_LABEL.get(enq["kind"], enq["kind"])),
